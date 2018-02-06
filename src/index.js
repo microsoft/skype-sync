@@ -4,41 +4,53 @@
 class Sync {
 
   constructor() {
+    this.handleMessages = this.handleMessages.bind(this)
+    this.init = this.init.bind(this)
+    this.onReceive = this.onReceive.bind(this)
+    this.onPersistedContentLoaded = this.onPersistedContentLoaded.bind(this)
+    this.send = this.send.bind(this)
+    this.persistContent = this.persistContent.bind(this)
+    this.loadPersistedContent = this.loadPersistedContent.bind(this)
     window.addEventListener("message", this.handleMessages);
   }
 
-  initHandler;
-  receiveHandler;
-  persistedContentHandler;
-
-  handleMessages = (window, messageEvent) => {
+  handleMessages(messageEvent) {
+    if (!messageEvent || !messageEvent.data) {
+      return;
+    }
     const data = JSON.parse(messageEvent.data);
     switch (data.type) {
       case "__SKYPE__LOAD_PERSISTED_CONTENT":
-        this.persistedContentHandler(data.payload);
+        if (this.persistedContentHandler) {
+          this.persistedContentHandler(data.payload);
+        }
         return;
       case "__SKYPE__INIT":
-        this.initHandler(data.payload);
+        if (this.initHandler) {
+          this.initHandler(data.payload);
+        }
         return;
       default:
-        this.receiveHandler(type, data.payload);
+        if (this.receiveHandler) {
+          this.receiveHandler(data.type, data.payload);
+        }
         return;
     }
   }
 
-  init = (handler) => {
+  init(handler) {
     this.initHandler = handler;
   }
 
-  onReceive = (handler) => {
+  onReceive(handler) {
     this.receiveHandler = handler;
   }
 
-  onPersistedContentLoaded = (handler) => {
+  onPersistedContentLoaded(handler) {
     this.persistedContentHandler = handler
   }
 
-  send = (type, payload) => {
+  send(type, payload) {
     parent.postMessage(
       JSON.stringify({
         type: type,
@@ -48,11 +60,11 @@ class Sync {
     );
   }
 
-  persistContent = (content) => {
+  persistContent(content) {
     this.send("__SKYPE__PERSIST_CONTENT", content);
   }
 
-  loadPersistedContent = () => {
+  loadPersistedContent() {
     this.send("__SKYPE__LOAD_PERSISTED_CONTENT");
   }
 }
