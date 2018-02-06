@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-class SharedCanvasSDK {
+class Sync {
 
   constructor() {
     window.addEventListener("message", this.handleMessages);
@@ -15,43 +15,47 @@ class SharedCanvasSDK {
     const data = JSON.parse(messageEvent.data);
     switch (data.type) {
       case "__SKYPE__LOAD_PERSISTED_CONTENT":
-        persistedContentHandler(data.content);
+        this.persistedContentHandler(data.payload);
         return;
       case "__SKYPE__INIT":
-        initHandler(data.content);
+        this.initHandler(data.payload);
         return;
       default:
-        receiveHandler(type, data.content);
+        this.receiveHandler(type, data.payload);
         return;
     }
   }
 
   init = (handler) => {
-    initHandler = handler;
+    this.initHandler = handler;
   }
 
-  send = (type, content) => {
+  onReceive = (handler) => {
+    this.receiveHandler = handler;
+  }
+
+  onPersistedContentLoaded = (handler) => {
+    this.persistedContentHandler = handler
+  }
+
+  send = (type, payload) => {
     parent.postMessage(
       JSON.stringify({
         type: type,
-        content: content
+        payload: payload
       }),
       "*"
     );
   }
 
-  onReceive = (handler) => {
-    receiveHandler = handler;
-  }
-
   persistContent = (content) => {
-    send("__SKYPE__PERSIST_CONTENT", content);
+    this.send("__SKYPE__PERSIST_CONTENT", content);
   }
 
-  loadPersistedContent = (handler) => {
-    persistedContentHandler = handler;
+  loadPersistedContent = () => {
+    this.send("__SKYPE__LOAD_PERSISTED_CONTENT");
   }
 }
 
-const sharedCanvasSDK = new SharedCanvasSDK();
-export default sharedCanvasSDK;
+const sync = new Sync();
+export default sync;
