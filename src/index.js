@@ -15,7 +15,7 @@ class Sync {
   }
 
   handleMessages(messageEvent) {
-    if (!messageEvent || !messageEvent.data) {
+    if (!messageEvent || messageEvent.source === window || !messageEvent.data) {
       return;
     }
     const data = JSON.parse(messageEvent.data);
