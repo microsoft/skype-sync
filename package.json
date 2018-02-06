@@ -1,7 +1,7 @@
 {
-  "name": "skype-shared-canvas-sdk",
+  "name": "skype-sync",
   "version": "0.0.1",
-  "description": "Skype's shared canvas SDK that allows users to create syncronized experiences on Skype Interviews",
+  "description": "Skype Sync SDK allows users to create syncronized experiences on Skype Interviews",
   "main": "./dist/index.js",
   "scripts": {
     "build": "babel src --presets babel-preset-es2015 --out-dir dist/",
