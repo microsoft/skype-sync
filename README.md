@@ -6,7 +6,7 @@ Skype Sync allows you create shared experiences across different Skype Interview
 
 Let's assume we are building a simplified synchronized note pad app.
 
-1. Import the Shared Canvas SDK
+1. Import the Sync SDK
 ```js
 import Sync from 'skype-sync'
 ```
