@@ -8,7 +8,7 @@ Let's assume we are building a simplified synchronized note pad app.
 
 1. Import the Shared Canvas SDK
 ```js
-import Sync from 'skype-shared-canvas'
+import Sync from 'skype-sync'
 ```
 
 2. Make sure to setup initialization handlers to accomondate for your UI.
