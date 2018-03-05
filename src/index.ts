@@ -5,7 +5,10 @@ class Sync {
 
     private initHandler: (payload: string) => void;
     private persistedContentHandler: (payload: string) => void;
-    private receiveHandler: (type: string, payload: string) => void;
+    private receiveHandler: (type: string, payload: string, uid: string, asid: string) => void;
+
+    private cuid: string;
+    private asid: string;
 
     constructor() {
         window.addEventListener("message", this.handleMessages);
@@ -15,7 +18,7 @@ class Sync {
         this.initHandler = handler;
     }
 
-    public onReceive(handler: (type: string, payload: string) => void) {
+    public onReceive(handler: (type: string, payload: string, uid: string, asid: string) => void) {
         this.receiveHandler = handler;
     }
 
@@ -43,23 +46,27 @@ class Sync {
                 }
                 return;
             case "__SKYPE__INIT":
+                this.asid = data.asid;
+                this.cuid = data.uid;
                 if (this.initHandler) {
                     this.initHandler(data.payload);
                 }
                 return;
             default:
                 if (this.receiveHandler) {
-                    this.receiveHandler(data.type, data.payload);
+                    this.receiveHandler(data.type, data.payload, data.uid, data.asid);
                 }
                 return;
         }
     }
 
     private send(type: string, payload?: any) {
-        parent.postMessage(
+        window.parent.postMessage(
             JSON.stringify({
                 type: type,
-                payload: payload
+                payload: payload,
+                uid: this.cuid,
+                asid: this.asid
             }),
             "*"
         );
@@ -67,8 +74,10 @@ class Sync {
 }
 
 interface MessagePayload {
-    type: string,
-    payload: string
+    type: string;
+    payload: string;
+    uid: string;
+    asid: string;
 }
 
 const sync = new Sync();
