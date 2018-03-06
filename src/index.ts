@@ -49,7 +49,7 @@ class Sync {
                 this.asid = data.asid;
                 this.cuid = data.uid;
                 if (this.initHandler) {
-                    this.initHandler(data.payload);
+                    this.initHandler(data.payload, this.asid, this.cuid);
                 }
                 return;
             default:
