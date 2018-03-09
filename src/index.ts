@@ -1,9 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+export interface ConfigItem {
+    name: string;
+    value: string;
+}
+
+export interface InitMessageData {
+    configuration: Array<ConfigItem>;
+    settings: Array<ConfigItem>;
+}
+
 class Sync {
 
-    private initHandler: (payload: string) => void;
+    private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
     private receiveHandler: (type: string, payload: string, uid: string, asid: string) => void;
 
@@ -14,7 +24,7 @@ class Sync {
         window.addEventListener("message", this.handleMessages);
     }
 
-    public init(handler: (payload: string) => void) {
+    public init(handler: (payload: InitMessageData, cuid: string, asid: string) => void) {
         this.initHandler = handler;
     }
 
@@ -49,7 +59,7 @@ class Sync {
                 this.asid = data.asid;
                 this.cuid = data.uid;
                 if (this.initHandler) {
-                    this.initHandler(data.payload, this.asid, this.cuid);
+                    this.initHandler(JSON.parse(data.payload), this.asid, this.cuid);
                 }
                 return;
             default:
@@ -80,5 +90,4 @@ interface MessagePayload {
     asid: string;
 }
 
-const sync = new Sync();
-export default sync;
+export default new Sync();
