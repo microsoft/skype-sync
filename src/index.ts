@@ -13,7 +13,7 @@ export interface InitMessageData {
 
 class Sync {
 
-    private initHandler: (cuid: string, asid: string, payload: InitMessageData) => void;
+    private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
     private receiveHandler: (type: string, payload: string, uid: string, asid: string) => void;
 
@@ -24,7 +24,7 @@ class Sync {
         window.addEventListener("message", this.handleMessages);
     }
 
-    public init(handler: (cuid: string, asid: string, payload: InitMessageData) => void) {
+    public init(handler: (payload: InitMessageData, cuid: string, asid: string) => void) {
         this.initHandler = handler;
     }
 
