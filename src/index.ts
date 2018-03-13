@@ -11,11 +11,17 @@ export interface InitMessageData {
     settings: Array<ConfigItem>;
 }
 
+export enum ErrorCodes {
+    Undefined = 0,
+    TooManyRequests = 1
+}
+
 class Sync {
 
     private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
     private receiveHandler: (type: string, payload: string, uid: string, asid: string) => void;
+    private errorHandler: (code: ErrorCodes) => void;
 
     private cuid: string;
     private asid: string;
@@ -34,6 +40,22 @@ class Sync {
 
     public onPersistedContentLoaded(handler: (payload: string) => void) {
         this.persistedContentHandler = handler
+    }
+
+    public onError(handler: (code: ErrorCodes) => void) {
+        this.errorHandler = handler;
+    }
+
+    public send(type: string, payload?: any) {
+        window.parent.postMessage(
+            JSON.stringify({
+                type: type,
+                payload: payload,
+                uid: this.cuid,
+                asid: this.asid
+            }),
+            "*"
+        );
     }
 
     public persistContent(content: any) {
@@ -62,24 +84,19 @@ class Sync {
                     this.initHandler(JSON.parse(data.payload), this.asid, this.cuid);
                 }
                 return;
+            case "__SKYPE__ERROR":
+                if (this.errorHandler) {
+                    this.errorHandler(JSON.parse(data.payload));
+                } else {
+                    throw new Error('No error handler is available.');
+                }
+                return;
             default:
                 if (this.receiveHandler) {
                     this.receiveHandler(data.type, data.payload, data.uid, data.asid);
                 }
                 return;
         }
-    }
-
-    private send(type: string, payload?: any) {
-        window.parent.postMessage(
-            JSON.stringify({
-                type: type,
-                payload: payload,
-                uid: this.cuid,
-                asid: this.asid
-            }),
-            "*"
-        );
     }
 }
 
