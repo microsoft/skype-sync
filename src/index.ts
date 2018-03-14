@@ -54,7 +54,7 @@ class Sync {
                 uid: this.cuid,
                 asid: this.asid
             }),
-            "*"
+            window.parent.location.origin
         );
     }
 
@@ -67,9 +67,13 @@ class Sync {
     }
 
     private handleMessages = (messageEvent) => {
-        if (!messageEvent || messageEvent.source === window || !messageEvent.data) {
+        if (!messageEvent ||
+            messageEvent.origin !== window.parent.location.origin ||
+            messageEvent.source === window ||
+            !messageEvent.data) {
             return;
         }
+
         const data: MessagePayload = JSON.parse(messageEvent.data);
         switch (data.type) {
             case "__SKYPE__LOAD_PERSISTED_CONTENT":
