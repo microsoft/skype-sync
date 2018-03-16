@@ -21,7 +21,7 @@ const ERROR_MESSAGE_TYPE = "__SKYPE__ERROR";
 const LOAD_CONTENT_MESSAGE_TYPE = "__SKYPE__LOAD_PERSISTED_CONTENT";
 const CONTENT_MESSAGE_TYPE = "__SKYPE__PERSIST_CONTENT";
 
-class Sync {
+export class Sync {
 
     private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
