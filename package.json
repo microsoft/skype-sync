@@ -1,8 +1,9 @@
 {
   "name": "skype-sync",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Skype Sync SDK allows users to create syncronized experiences on Skype Interviews",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build"
