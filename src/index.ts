@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+import SkypeHub, { MessageRequest, StoreContextRequest, GetContextRequest, InitializeRequest } from './synchronization/skypeHub';
+
 export interface ConfigItem {
     name: string;
     value: string;
@@ -13,120 +15,225 @@ export interface InitMessageData {
 
 export enum ErrorCodes {
     Undefined = 0,
-    TooManyRequests = 1
+    NotInitialized = 1
 }
 
-const INIT_MESSAGE_TYPE = "__SKYPE__INIT";
-const ERROR_MESSAGE_TYPE = "__SKYPE__ERROR";
-const LOAD_CONTENT_MESSAGE_TYPE = "__SKYPE__LOAD_PERSISTED_CONTENT";
-const CONTENT_MESSAGE_TYPE = "__SKYPE__PERSIST_CONTENT";
+// TODO: how do we get url? - hardcoding
+const HUB_URL = 'https://rome-hub-int.azurewebsites.net/hubs/addins';
 
 export class Sync {
-
     private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
-    private receiveHandler: (type: string, payload: string, uid: string, asid: string) => void;
+    private receiveHandler: (type: string, uid: string, payload?: string) => void;
     private errorHandler: (code: ErrorCodes) => void;
 
-    private cuid: string;
     private asid: string;
+    private cuid: string;
+    private addinIdentifier: string;
+    private interviewCode: string;
+    private userId: number;
+    private userType: number;
 
-    private origin: string;
+    private connected = false;
+    private communication: SkypeHub;
+
+    private initResolve?: () => void;
+    private initReject?: () => void;
 
     constructor() {
-        window.addEventListener("message", this.handleMessages);
+        this.communication = new SkypeHub();
     }
 
-    public init(handler: (payload: InitMessageData, cuid: string, asid: string) => void) {
+    public init(addinIdentifier: string): Promise<void> {
+        this.communication.readyListeneres.push(this.handleReadyEvent);
+        this.communication.messageReceivedListeneres.push(this.handleMessageEvent);
+        this.communication.contextLoadedListeneres.push(this.handleContextLoadedEvent);
+
+        this.addinIdentifier = addinIdentifier;
+        return new Promise<void>((resolve, reject) => {
+            this.initResolve = resolve;
+            this.initReject = reject;
+
+            this.requestIdentifiers();
+            this.communication.connect(HUB_URL)
+                .then(() => {
+                    if (this.interviewCode) {
+                        this.sendInitMessage();
+                    }
+                    this.connected = true;
+                })
+                .catch(() => {
+                    reject();
+
+                    this.initResolve = undefined;
+                    this.initReject = undefined;
+                });
+        });
+    }
+
+    public onInit(handler: (payload: InitMessageData, cuid: string, asid: string) => void) {
         this.initHandler = handler;
     }
 
-    public onReceive(handler: (type: string, payload: string, uid: string, asid: string) => void) {
+    public onReceive(handler: (type: string, uid: string, payload?: string) => void) {
         this.receiveHandler = handler;
     }
 
     public onPersistedContentLoaded(handler: (payload: string) => void) {
-        this.persistedContentHandler = handler
+        this.persistedContentHandler = handler;
     }
 
     public onError(handler: (code: ErrorCodes) => void) {
         this.errorHandler = handler;
     }
 
-    public send(type: string, payload?: any) {
-        if (!this.origin) {
-            throw new Error("SDK was not initialized.");
+    public sendMessage(type: string, payload?: any) {
+        if (!this.isCommunicationEstablished()) {
+            return;
         }
 
-        window.parent.postMessage(
-            JSON.stringify({
-                type: type,
-                payload: payload,
-                uid: this.cuid,
-                asid: this.asid
-            }),
-            this.origin
-        );
+        const message: MessageRequest = {
+            addinIdentifier: this.addinIdentifier,
+            asid: this.asid,
+            payload,
+            type,
+            uid: this.cuid
+        };
+        this.communication.sendMessage(message);
     }
 
     public persistContent(content: any) {
-        this.send(CONTENT_MESSAGE_TYPE, content);
+        if (!this.isCommunicationEstablished()) {
+            return;
+        }
+
+        const context: StoreContextRequest = {
+            addinIdentifier: this.addinIdentifier,
+            asid: this.asid,
+            interviewCode: this.interviewCode,
+            payload: JSON.stringify(content),
+            uid: this.cuid
+        };
+        this.communication.storeContext(context);
     }
 
     public loadPersistedContent() {
-        this.send(LOAD_CONTENT_MESSAGE_TYPE);
+        if (!this.isCommunicationEstablished()) {
+            return;
+        }
+
+        const request: GetContextRequest = {
+            addinIdentifier: this.addinIdentifier,
+            asid: this.asid,
+            interviewCode: this.interviewCode
+        };
+        this.communication.getContext(request);
     }
 
-    private handleMessages = (messageEvent: MessageEvent) => {
+    private isCommunicationEstablished() {
+        if (!this.asid || !(this.interviewCode)) {
+            if (this.errorHandler) {
+                this.errorHandler(ErrorCodes.NotInitialized);
+                return false;
+            }
+
+            throw new Error('Cannot send messages when communication channel is not established.');
+        }
+
+        return true;
+    }
+
+    private requestIdentifiers() {
+        window.addEventListener('message', this.handleHostMessage);
+
+        window.parent.postMessage(
+            JSON.stringify({
+                bridgeRequestType: 'bridge/getconversationinfo',
+                forceRequestUserConsent: false,
+                shouldSetNamespace: false
+            }),
+            '*'
+        );
+
+        setTimeout(() => {
+            if (this.initReject) {
+                this.initReject();
+                this.initResolve = undefined;
+                this.initReject = undefined;
+            }
+        }, 10000);
+    }
+
+    private handleHostMessage = (messageEvent: MessageEvent) => {
         if (!messageEvent ||
             messageEvent.source === window ||
             !messageEvent.data) {
             return;
         }
 
+        // TODO: check if we have message we are looking for
+
         const data: MessagePayload = JSON.parse(messageEvent.data);
-        if (!this.origin && data.type === INIT_MESSAGE_TYPE) {
-            this.origin = messageEvent.origin;
+        this.interviewCode = data.interviewId;
+        this.userId = data.userId;
+        this.userType = data.userType;
+        window.removeEventListener('message', this.handleHostMessage);
+
+        if (this.connected) {
+            this.sendInitMessage();
+        }
+    }
+
+    // TODO: how to get userId
+    private sendInitMessage = () => {
+        const request: InitializeRequest = {
+            addinIdentifier: this.addinIdentifier,
+            interviewCode: this.interviewCode,
+            userId: this.userId,
+            userType: this.userType
+        };
+        this.communication.sendInitRequest(request);
+    }
+
+    private handleReadyEvent = (asid: string, cuid: string) => {
+        this.asid = asid;
+        this.cuid = cuid;
+
+        if (this.initHandler) {
+            this.initHandler({
+                // TODO: how do we pass in configuration and settings
+                configuration: [],
+                settings: []
+            }, cuid, asid);
         }
 
-        if (this.origin !== messageEvent.origin) {
-            return;
+        if (this.initResolve) {
+            this.initResolve();
         }
+    }
 
-        switch (data.type) {
-            case LOAD_CONTENT_MESSAGE_TYPE:
-                if (this.persistedContentHandler) {
-                    this.persistedContentHandler(data.payload);
-                }
-                return;
-            case INIT_MESSAGE_TYPE:
-                this.asid = data.asid;
-                this.cuid = data.uid;
-                if (this.initHandler) {
-                    this.initHandler(JSON.parse(data.payload), this.asid, this.cuid);
-                }
-                return;
-            case ERROR_MESSAGE_TYPE:
-                if (this.errorHandler) {
-                    this.errorHandler(JSON.parse(data.payload));
-                } else {
-                    throw new Error("No error handler is available.");
-                }
-                return;
-            default:
-                if (this.receiveHandler) {
-                    this.receiveHandler(data.type, data.payload, data.uid, data.asid);
-                }
-                return;
+    private handleMessageEvent = (message: MessageRequest) => {
+        if (this.receiveHandler) {
+            this.receiveHandler(
+                message.type,
+                message.uid,
+                message.payload
+            );
+        }
+    }
+
+    private handleContextLoadedEvent = (payload: string) => {
+        if (this.persistedContentHandler) {
+            this.persistedContentHandler(payload);
         }
     }
 }
 
 interface MessagePayload {
     type: string;
-    payload: string;
-    uid: string;
-    asid: string;
+    interviewId: string;
+    userId: number;
+    userType: number;
 }
 
 export default new Sync();
