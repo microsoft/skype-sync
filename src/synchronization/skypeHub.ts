@@ -53,32 +53,32 @@ export default class SkypeHub {
 }
 
 export interface InitializeRequest {
-    interviewCode: string;
-    addinIdentifier: string;
-    userId: number;
-    userType: number;
+    InterviewCode: string;
+    AddinIdentifier: string;
+    UserId: number;
+    UserType: number;
 }
 
 export interface MessageRequest {
-    type: string;
-    addinIdentifier: string;
-    asid: string;
-    uid: string;
-    payload?: string;
+    Type: string;
+    AddinIdentifier: string;
+    Asid: string;
+    Uid: string;
+    Payload?: string;
 }
 
 export interface StoreContextRequest {
-    interviewCode: string;
+    InterviewCode: string;
 
-    addinIdentifier: string;
-    asid: string;
-    uid: string;
-    payload: string;
+    AddinIdentifier: string;
+    Asid: string;
+    Uid: string;
+    Payload: string;
 }
 
 export interface GetContextRequest {
-    interviewCode: string;
+    InterviewCode: string;
 
-    addinIdentifier: string;
-    asid: string;
+    AddinIdentifier: string;
+    Asid: string;
 }

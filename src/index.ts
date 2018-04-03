@@ -93,12 +93,16 @@ export class Sync {
         }
 
         const message: MessageRequest = {
-            addinIdentifier: this.addinIdentifier,
-            asid: this.asid,
-            payload,
-            type,
-            uid: this.cuid
+            AddinIdentifier: this.addinIdentifier,
+            Asid: this.asid,
+            Type: type,
+            Uid: this.cuid
         };
+
+        if (payload) {
+            message.Payload = JSON.stringify(payload);
+        }
+
         this.communication.sendMessage(message);
     }
 
@@ -108,11 +112,11 @@ export class Sync {
         }
 
         const context: StoreContextRequest = {
-            addinIdentifier: this.addinIdentifier,
-            asid: this.asid,
-            interviewCode: this.interviewCode,
-            payload: JSON.stringify(content),
-            uid: this.cuid
+            AddinIdentifier: this.addinIdentifier,
+            Asid: this.asid,
+            InterviewCode: this.interviewCode,
+            Payload: JSON.stringify(content),
+            Uid: this.cuid
         };
         this.communication.storeContext(context);
     }
@@ -123,9 +127,9 @@ export class Sync {
         }
 
         const request: GetContextRequest = {
-            addinIdentifier: this.addinIdentifier,
-            asid: this.asid,
-            interviewCode: this.interviewCode
+            AddinIdentifier: this.addinIdentifier,
+            Asid: this.asid,
+            InterviewCode: this.interviewCode
         };
         this.communication.getContext(request);
     }
@@ -187,10 +191,10 @@ export class Sync {
     // TODO: how to get userId
     private sendInitMessage = () => {
         const request: InitializeRequest = {
-            addinIdentifier: this.addinIdentifier,
-            interviewCode: this.interviewCode,
-            userId: this.userId,
-            userType: this.userType
+            AddinIdentifier: this.addinIdentifier,
+            InterviewCode: this.interviewCode,
+            UserId: this.userId,
+            UserType: this.userType
         };
         this.communication.sendInitRequest(request);
     }
@@ -210,14 +214,17 @@ export class Sync {
         if (this.initResolve) {
             this.initResolve();
         }
+
+        this.initReject = undefined;
+        this.initResolve = undefined;
     }
 
     private handleMessageEvent = (message: MessageRequest) => {
         if (this.receiveHandler) {
             this.receiveHandler(
-                message.type,
-                message.uid,
-                message.payload
+                message.Type,
+                message.Uid,
+                message.Payload
             );
         }
     }
