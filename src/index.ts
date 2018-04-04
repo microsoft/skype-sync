@@ -30,9 +30,10 @@ export class Sync {
     private asid: string;
     private cuid: string;
     private addinIdentifier: string;
+
+    private conversationId: string;
     private interviewCode: string;
-    private userId: number;
-    private userType: number;
+    private userId: string;
 
     private connected = false;
     private communication: SkypeHub;
@@ -44,17 +45,25 @@ export class Sync {
         this.communication = new SkypeHub();
     }
 
-    public init(addinIdentifier: string): Promise<void> {
+    public init(addinIdentifier: string, userId?: string, conversationId?: string): Promise<void> {
         this.communication.readyListeneres.push(this.handleReadyEvent);
         this.communication.messageReceivedListeneres.push(this.handleMessageEvent);
         this.communication.contextLoadedListeneres.push(this.handleContextLoadedEvent);
+
+        if (userId && conversationId) {
+            this.userId = userId;
+            this.conversationId = conversationId;
+        }
 
         this.addinIdentifier = addinIdentifier;
         return new Promise<void>((resolve, reject) => {
             this.initResolve = resolve;
             this.initReject = reject;
 
-            this.requestIdentifiers();
+            if (!conversationId || !userId) {
+                this.requestIdentifiers();
+            }
+
             this.communication.connect(HUB_URL)
                 .then(() => {
                     if (this.interviewCode) {
@@ -180,7 +189,7 @@ export class Sync {
         const data: MessagePayload = JSON.parse(messageEvent.data);
         this.interviewCode = data.interviewId;
         this.userId = data.userId;
-        this.userType = data.userType;
+        this.conversationId = data.conversationId;
         window.removeEventListener('message', this.handleHostMessage);
 
         if (this.connected) {
@@ -194,7 +203,7 @@ export class Sync {
             AddinIdentifier: this.addinIdentifier,
             InterviewCode: this.interviewCode,
             UserId: this.userId,
-            UserType: this.userType
+            ThreadId: this.conversationId
         };
         this.communication.sendInitRequest(request);
     }
@@ -238,9 +247,9 @@ export class Sync {
 
 interface MessagePayload {
     type: string;
+    conversationId: string;
     interviewId: string;
-    userId: number;
-    userType: number;
+    userId: string;
 }
 
 export default new Sync();

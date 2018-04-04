@@ -53,10 +53,10 @@ export default class SkypeHub {
 }
 
 export interface InitializeRequest {
-    InterviewCode: string;
+    InterviewCode?: string;
+    ThreadId?: string;
     AddinIdentifier: string;
-    UserId: number;
-    UserType: number;
+    UserId: string;
 }
 
 export interface MessageRequest {
