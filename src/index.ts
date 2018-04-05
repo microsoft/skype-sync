@@ -66,7 +66,7 @@ export class Sync {
 
             this.communication.connect(HUB_URL)
                 .then(() => {
-                    if (this.interviewCode) {
+                    if (this.interviewCode || conversationId) {
                         this.sendInitMessage();
                     }
                     this.connected = true;
