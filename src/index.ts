@@ -145,7 +145,7 @@ export class Sync {
 
         window.parent.postMessage(
             JSON.stringify(initMessage),
-            '*'
+            '*.skype.com'
         );
 
         setTimeout(() => {
@@ -165,7 +165,7 @@ export class Sync {
         }
 
         const data: InitMessageResponse = JSON.parse(messageEvent.data);
-        if (!data || data.type === INIT_MESSAGE_NAME) {
+        if (!data || data.type !== INIT_MESSAGE_NAME) {
             return;
         }
 
