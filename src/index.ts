@@ -56,6 +56,14 @@ export class Sync {
             this.initReject = reject;
 
             this.requestIdentifiers();
+
+            setTimeout(() => {
+                if (this.initReject) {
+                    reject();
+                    this.initResolve = undefined;
+                    this.initReject = undefined;
+                }
+            }, 120000);
         });
     }
 
@@ -142,19 +150,10 @@ export class Sync {
             type: INIT_MESSAGE_NAME,
             addinIdentifier: this.addinIdentifier
         };
-
         window.parent.postMessage(
             JSON.stringify(initMessage),
             '*'
         );
-
-        setTimeout(() => {
-            if (this.initReject) {
-                this.initReject();
-                this.initResolve = undefined;
-                this.initReject = undefined;
-            }
-        }, 10000);
     }
 
     private handleHostMessage = (messageEvent: MessageEvent) => {
