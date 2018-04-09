@@ -18,8 +18,7 @@ export enum ErrorCodes {
     NotInitialized = 1
 }
 
-// TODO: how do we get url? - hardcoding
-const HUB_URL = 'https://rome-hub-int.azurewebsites.net/hubs/addins';
+const INIT_MESSAGE_NAME = 'skype-sync_initmessage';
 
 export class Sync {
     private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
@@ -34,8 +33,9 @@ export class Sync {
     private conversationId: string;
     private interviewCode: string;
     private userId: string;
+    private configuration: ConfigurationValue[];
+    private setting: ConfigurationValue[];
 
-    private connected = false;
     private communication: SkypeHub;
 
     private initResolve?: () => void;
@@ -45,38 +45,17 @@ export class Sync {
         this.communication = new SkypeHub();
     }
 
-    public init(addinIdentifier: string, userId?: string, conversationId?: string): Promise<void> {
+    public init(addinIdentifier: string): Promise<void> {
         this.communication.readyListeneres.push(this.handleReadyEvent);
         this.communication.messageReceivedListeneres.push(this.handleMessageEvent);
         this.communication.contextLoadedListeneres.push(this.handleContextLoadedEvent);
-
-        if (userId && conversationId) {
-            this.userId = userId;
-            this.conversationId = conversationId;
-        }
 
         this.addinIdentifier = addinIdentifier;
         return new Promise<void>((resolve, reject) => {
             this.initResolve = resolve;
             this.initReject = reject;
 
-            if (!conversationId || !userId) {
-                this.requestIdentifiers();
-            }
-
-            this.communication.connect(HUB_URL)
-                .then(() => {
-                    if (this.interviewCode || conversationId) {
-                        this.sendInitMessage();
-                    }
-                    this.connected = true;
-                })
-                .catch(() => {
-                    reject();
-
-                    this.initResolve = undefined;
-                    this.initReject = undefined;
-                });
+            this.requestIdentifiers();
         });
     }
 
@@ -159,12 +138,13 @@ export class Sync {
     private requestIdentifiers() {
         window.addEventListener('message', this.handleHostMessage);
 
+        const initMessage: InitMessageRequest = {
+            type: INIT_MESSAGE_NAME,
+            addinIdentifier: this.addinIdentifier
+        };
+
         window.parent.postMessage(
-            JSON.stringify({
-                bridgeRequestType: 'bridge/getconversationinfo',
-                forceRequestUserConsent: false,
-                shouldSetNamespace: false
-            }),
+            JSON.stringify(initMessage),
             '*'
         );
 
@@ -184,20 +164,32 @@ export class Sync {
             return;
         }
 
-        // TODO: check if we have message we are looking for
+        const data: InitMessageResponse = JSON.parse(messageEvent.data);
+        if (!data || data.type === INIT_MESSAGE_NAME) {
+            return;
+        }
 
-        const data: MessagePayload = JSON.parse(messageEvent.data);
+        window.removeEventListener('message', this.handleHostMessage);
         this.interviewCode = data.interviewId;
         this.userId = data.userId;
         this.conversationId = data.conversationId;
-        window.removeEventListener('message', this.handleHostMessage);
+        this.configuration = data.configuration;
+        this.setting = data.setting;
 
-        if (this.connected) {
-            this.sendInitMessage();
-        }
+        this.communication.connect(data.syncurl)
+            .then(() => {
+                this.sendInitMessage();
+            })
+            .catch(() => {
+                if (this.initReject) {
+                    this.initReject();
+                }
+
+                this.initResolve = undefined;
+                this.initReject = undefined;
+            });
     }
 
-    // TODO: how to get userId
     private sendInitMessage = () => {
         const request: InitializeRequest = {
             AddinIdentifier: this.addinIdentifier,
@@ -214,9 +206,8 @@ export class Sync {
 
         if (this.initHandler) {
             this.initHandler({
-                // TODO: how do we pass in configuration and settings
-                configuration: [],
-                settings: []
+                configuration: this.configuration,
+                settings: this.setting
             }, cuid, asid);
         }
 
@@ -245,11 +236,24 @@ export class Sync {
     }
 }
 
-interface MessagePayload {
+interface InitMessageRequest {
     type: string;
-    conversationId: string;
+    addinIdentifier: string;
+}
+
+interface InitMessageResponse {
+    type: string;
+    conversationId?: string;
     interviewId: string;
     userId: string;
+    syncurl: string;
+    configuration: ConfigurationValue[];
+    setting: ConfigurationValue[];
+}
+
+interface ConfigurationValue {
+    name: string;
+    value: string;
 }
 
 export default new Sync();
