@@ -145,7 +145,7 @@ export class Sync {
 
         window.parent.postMessage(
             JSON.stringify(initMessage),
-            '*.skype.com'
+            '*'
         );
 
         setTimeout(() => {
