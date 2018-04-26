@@ -1,6 +1,6 @@
 import signalr = require('@aspnet/signalr');
 
-export default class SkypeHub {
+export default class AddinsHub {
     public readyListeneres: Array<(asid: string, cuid: string) => void> = [];
     public messageReceivedListeneres: Array<(message: MessageRequest) => void> = [];
     public contextLoadedListeneres: Array<(context: string) => void> = [];
@@ -11,7 +11,7 @@ export default class SkypeHub {
         this.hub = new signalr.HubConnection(url);
 
         this.hub.on('readyAddins', this.handleReadyEvent);
-        this.hub.on('sendAddinMessage', this.handleMessageEvent);
+        this.hub.on('routeMessage', this.handleMessageEvent);
         this.hub.on('addinContextLoaded', this.handleContextLoadedEvent);
 
         return this.hub.start();

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import SkypeHub, { MessageRequest, StoreContextRequest, GetContextRequest, InitializeRequest } from './synchronization/skypeHub';
+import AddinsHub, { MessageRequest, StoreContextRequest, GetContextRequest, InitializeRequest } from './synchronization/skypeHub';
 
 export interface ConfigItem {
     name: string;
@@ -18,39 +18,99 @@ export enum ErrorCodes {
     NotInitialized = 1
 }
 
-const INIT_MESSAGE_NAME = 'skype-sync_initmessage';
+const INIT_MESSAGE_NAME = 'skype-sync-init';
 
 export class Sync {
+
     private initHandler: (payload: InitMessageData, cuid: string, asid: string) => void;
     private persistedContentHandler: (payload: string) => void;
     private receiveHandler: (type: string, uid: string, payload?: string) => void;
     private errorHandler: (code: ErrorCodes) => void;
 
-    private asid: string;
-    private cuid: string;
     private addinIdentifier: string;
-
-    private conversationId: string;
-    private interviewCode: string;
-    private userId: string;
+    private host: string;
+    private addinToken: string;
     private configuration: ConfigurationValue[];
     private setting: ConfigurationValue[];
 
-    private communication: SkypeHub;
+    private addinsHub: AddinsHub;
 
     private initResolve?: () => void;
     private initReject?: () => void;
 
     constructor() {
-        this.communication = new SkypeHub();
+        this.addinsHub = new AddinsHub();
+
+        window.addEventListener('message', this.onHostMessageReceived);
     }
 
-    public init(addinIdentifier: string): Promise<void> {
-        this.communication.readyListeneres.push(this.handleReadyEvent);
-        this.communication.messageReceivedListeneres.push(this.handleMessageEvent);
-        this.communication.contextLoadedListeneres.push(this.handleContextLoadedEvent);
+    private onHostMessageReceived = (messageEvent: MessageEvent) => {
+        if (!messageEvent ||messageEvent.source === window || !messageEvent.data || !messageEvent.origin || !messageEvent.origin.endsWith('.skype.com')) {
+            return;
+        }
 
+        const hostMessage: HostMessage = JSON.parse(messageEvent.data);
+        switch (hostMessage.type) {
+            case INIT_MESSAGE_NAME:
+                // host requested init;
+                this.initializeAddin(<AddinInitHostMessage>hostMessage);
+                break;
+            default:
+                console.error("unknown host message of type:" + hostMessage.type);
+
+        }
+    }
+
+    private initializeAddin(data: AddinInitHostMessage) 
+    {
+        this.addinIdentifier = data.manifestIdentifier;
+        this.configuration = data.configuration;
+        this.setting = data.setting;
+
+        var addinUrl = `${data.addinApiHost}/hubs/addins`;
+        
+        this.addinsHub.connect(addinUrl)
+            .then(() => {
+                // addin connected - telemetry?
+            })
+            .catch((e) => {
+                // addin connected failure - telemetry/toast?
+            });
+    }
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * 
+     * 
+     * @param {string} addinIdentifier 
+     * @param {any} [string=host] Origin of the target to which messages will be posted (eg. https://interviews.skype.com)
+     * @returns {Promise<void>} 
+     * @memberof Sync
+     */
+    public init(addinIdentifier: string, host: string): Promise<void> {
+        
         this.addinIdentifier = addinIdentifier;
+        this.host = host;
+        
+        this.addinsHub.readyListeneres.push(this.handleReadyEvent);
+        this.addinsHub.messageReceivedListeneres.push(this.handleMessageEvent);
+        this.addinsHub.contextLoadedListeneres.push(this.handleContextLoadedEvent);
+
         return new Promise<void>((resolve, reject) => {
             this.initResolve = resolve;
             this.initReject = reject;
@@ -99,7 +159,7 @@ export class Sync {
             message.Payload = JSON.stringify(payload);
         }
 
-        this.communication.sendMessage(message);
+        this.addinsHub.sendMessage(message);
     }
 
     public persistContent(content: any) {
@@ -114,7 +174,7 @@ export class Sync {
             Payload: JSON.stringify(content),
             Uid: this.cuid
         };
-        this.communication.storeContext(context);
+        this.addinsHub.storeContext(context);
     }
 
     public loadPersistedContent() {
@@ -127,7 +187,7 @@ export class Sync {
             Asid: this.asid,
             InterviewCode: this.interviewCode
         };
-        this.communication.getContext(request);
+        this.addinsHub.getContext(request);
     }
 
     private isCommunicationEstablished() {
@@ -144,7 +204,6 @@ export class Sync {
     }
 
     private requestIdentifiers() {
-        window.addEventListener('message', this.handleHostMessage);
 
         const initMessage: InitMessageRequest = {
             type: INIT_MESSAGE_NAME,
@@ -152,42 +211,10 @@ export class Sync {
         };
         window.parent.postMessage(
             JSON.stringify(initMessage),
-            '*'
+            this.host
         );
     }
 
-    private handleHostMessage = (messageEvent: MessageEvent) => {
-        if (!messageEvent ||
-            messageEvent.source === window ||
-            !messageEvent.data) {
-            return;
-        }
-
-        const data: InitMessageResponse = JSON.parse(messageEvent.data);
-        if (!data || data.type !== INIT_MESSAGE_NAME) {
-            return;
-        }
-
-        window.removeEventListener('message', this.handleHostMessage);
-        this.interviewCode = data.interviewId;
-        this.userId = data.userId;
-        this.conversationId = data.conversationId;
-        this.configuration = data.configuration;
-        this.setting = data.setting;
-
-        this.communication.connect(data.syncurl)
-            .then(() => {
-                this.sendInitMessage();
-            })
-            .catch(() => {
-                if (this.initReject) {
-                    this.initReject();
-                }
-
-                this.initResolve = undefined;
-                this.initReject = undefined;
-            });
-    }
 
     private sendInitMessage = () => {
         const request: InitializeRequest = {
@@ -196,7 +223,7 @@ export class Sync {
             UserId: this.userId,
             ThreadId: this.conversationId
         };
-        this.communication.sendInitRequest(request);
+        this.addinsHub.sendInitRequest(request);
     }
 
     private handleReadyEvent = (asid: string, cuid: string) => {
@@ -235,20 +262,76 @@ export class Sync {
     }
 }
 
-interface InitMessageRequest {
+/**
+ * Set of attributes every host message has
+ * 
+ * @interface HostMessage
+ */
+interface HostMessage {
+    /**
+     * Type of message host is sending
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
     type: string;
-    addinIdentifier: string;
+    
+    /**
+     * Unique string identifier of the addin
+     * 
+     * @type {string}
+     * @memberof HostMessage
+     */
+    manifestIdentifier: string;
 }
 
-interface InitMessageResponse {
-    type: string;
-    conversationId?: string;
-    interviewId: string;
-    userId: string;
-    syncurl: string;
+/**
+ * Definition of the specific attributes of the event host 
+ * is sending to addins when requesting them to initialize 
+ * to ready state.
+ * 
+ * @interface AddinInitHostMessage
+ * @extends {HostMessage}
+ */
+interface AddinInitHostMessage extends HostMessage {
+    /**
+     * Url of the addins api host
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    addinApiHost: string;
+    
+    /**
+     * 
+     * Token which addin will send as bearer authorization header in 
+     * order to authorize itself.
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    addinToken: string;
+
+    /**
+     * A set of configuration properties which are to be 
+     * defined per interview/meeting during the meeting creation.
+     * 
+     * @type {ConfigurationValue[]}
+     * @memberof AddinInitHostMessage
+     */
     configuration: ConfigurationValue[];
+
+    /**
+     * Set of settings which company/tenant admin sets up  on a company level
+     * and which are used for every interview/meeting
+     * 
+     * @type {ConfigurationValue[]}
+     * @memberof AddinInitHostMessage
+     */
     setting: ConfigurationValue[];
 }
+
+
 
 interface ConfigurationValue {
     name: string;
