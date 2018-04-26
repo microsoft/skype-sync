@@ -8,7 +8,7 @@ export default class AddinsHub {
     private hub: signalr.HubConnection;
 
     public connect(url: string): Promise<void> {
-        this.hub = new signalr.HubConnection(url);
+        this.hub = new signalr.HubConnection(url,);
 
         this.hub.on('readyAddins', this.handleReadyEvent);
         this.hub.on('routeMessage', this.handleMessageEvent);
