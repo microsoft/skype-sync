@@ -9,6 +9,7 @@ const INIT_MESSAGE_NAME = 'skype-sync-init';
 export class Sync {
 
     private errorHandler: (code: ErrorCodes) => void;
+    private initHandler: (configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void
 
     private host: string;
     private addinToken: string;
@@ -48,6 +49,16 @@ export class Sync {
 
     public onError(handler: (code: ErrorCodes) => void) {
         this.errorHandler = handler;
+    }
+
+    /**
+     * Provides a way for addin to be informed once the sync sdk is initialized.
+     * 
+     * @param {(configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void} handler 
+     * @memberof Sync
+     */
+    public onInit(handler: (configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void) {
+        this.initHandler = handler;
     }
 
     /**
@@ -106,7 +117,8 @@ export class Sync {
         this.host = data.addinApiHost;
 
         var addinUrl = `${data.addinApiHost}/hubs/addins?token=${data.addinToken}`;
-        this.addinsHub.connect(addinUrl);
+        this.addinsHub.connect(addinUrl)
+            .then(() => this.initHandler(this.configuration, this.setting))
     }
 }
 
