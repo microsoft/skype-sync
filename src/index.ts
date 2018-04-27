@@ -126,7 +126,7 @@ export enum ErrorCodes {
     NotInitialized = 1
 }
 
-interface ConfigurationValue {
+export interface ConfigurationValue {
     name: string;
     value: string;
 }
