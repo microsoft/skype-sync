@@ -1,84 +1,55 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 import signalr = require('@aspnet/signalr');
 
 export default class AddinsHub {
-    public readyListeneres: Array<(asid: string, cuid: string) => void> = [];
-    public messageReceivedListeneres: Array<(message: MessageRequest) => void> = [];
-    public contextLoadedListeneres: Array<(context: string) => void> = [];
+
+    public messageReceivedListener: (message: MessageRequest) => void;
+    public contextFetchedListener: (context: string) => void;
 
     private hub: signalr.HubConnection;
 
-    public connect(url: string): Promise<void> {
-        this.hub = new signalr.HubConnection(url,);
+    constructor() {
 
-        this.hub.on('readyAddins', this.handleReadyEvent);
-        this.hub.on('routeMessage', this.handleMessageEvent);
-        this.hub.on('addinContextLoaded', this.handleContextLoadedEvent);
+        // default NOP listeners
+        this.messageReceivedListener = (message: MessageRequest) => {
+            console.log('[AddinsHub]::NOP-:message received:', message);
+        }
+        
+        this.contextFetchedListener = (context: string) => {
+            console.log('[AddinsHub]::NOP-context received:', context);
+        }
+    }
+
+    public connect(url: string): Promise<void> {
+
+        this.hub = new signalr.HubConnection(url);
+
+        this.hub.on('messageReceived', this.messageReceivedListener);
+        this.hub.on('contextFetched', this.contextFetchedListener);
 
         return this.hub.start();
     }
 
-    public sendInitRequest(request: InitializeRequest): Promise<void> {
-        return this.hub.invoke('initializeAddins', request);
-    }
-
     public sendMessage(message: MessageRequest): Promise<void> {
-        return this.hub.invoke('sendAddinMessage', message);
+        return this.hub.invoke('sendMessage', message);
     }
 
     public storeContext(context: StoreContextRequest): Promise<void> {
-        return this.hub.invoke('storeAddinContext', context);
+        return this.hub.invoke('storeContext', context);
     }
 
-    public getContext(request: GetContextRequest): Promise<void> {
-        return this.hub.invoke('getAddinContext', request);
+    public fetchContext(): Promise<void> {
+        return this.hub.invoke('fetchContext');
     }
-
-    private handleReadyEvent = (asid: string, cuid: string) => {
-        this.readyListeneres.forEach(listener => {
-            listener(asid, cuid);
-        });
-    }
-
-    private handleMessageEvent = (message: MessageRequest) => {
-        this.messageReceivedListeneres.forEach(listener => {
-            listener(message);
-        });
-    }
-
-    private handleContextLoadedEvent = (context: string) => {
-        this.contextLoadedListeneres.forEach(listener => {
-            listener(context);
-        });
-    }
-}
-
-export interface InitializeRequest {
-    InterviewCode?: string;
-    ThreadId?: string;
-    AddinIdentifier: string;
-    UserId: string;
 }
 
 export interface MessageRequest {
     Type: string;
-    AddinIdentifier: string;
-    Asid: string;
-    Uid: string;
     Payload?: string;
 }
 
 export interface StoreContextRequest {
-    InterviewCode: string;
-
-    AddinIdentifier: string;
-    Asid: string;
-    Uid: string;
     Payload: string;
-}
-
-export interface GetContextRequest {
-    InterviewCode: string;
-
-    AddinIdentifier: string;
-    Asid: string;
 }
