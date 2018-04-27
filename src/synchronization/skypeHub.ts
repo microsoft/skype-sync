@@ -5,7 +5,7 @@ import signalr = require('@aspnet/signalr');
 
 export default class AddinsHub {
 
-    public messageReceivedListener: (message: MessageRequest) => void;
+    public messageReceivedListener: (message: Message) => void;
     public contextFetchedListener: (context: string) => void;
 
     private hub: signalr.HubConnection;
@@ -13,7 +13,7 @@ export default class AddinsHub {
     constructor() {
 
         // default NOP listeners
-        this.messageReceivedListener = (message: MessageRequest) => {
+        this.messageReceivedListener = (message: Message) => {
             console.log('[AddinsHub]::NOP-:message received:', message);
         }
         
@@ -32,11 +32,11 @@ export default class AddinsHub {
         return this.hub.start();
     }
 
-    public sendMessage(message: MessageRequest): Promise<void> {
+    public sendMessage(message: Message): Promise<void> {
         return this.hub.invoke('sendMessage', message);
     }
 
-    public storeContext(context: StoreContextRequest): Promise<void> {
+    public storeContext(context: StoreContext): Promise<void> {
         return this.hub.invoke('storeContext', context);
     }
 
@@ -45,11 +45,11 @@ export default class AddinsHub {
     }
 }
 
-export interface MessageRequest {
+export interface Message {
     type: string;
     payload?: string;
 }
 
-export interface StoreContextRequest {
+export interface StoreContext {
     payload: string;
 }

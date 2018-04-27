@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import AddinsHub, { MessageRequest, StoreContextRequest } from './synchronization/skypeHub';
+import AddinsHub, { Message, StoreContext } from './synchronization/skypeHub';
 import {HostMessage, AddinInitHostMessage}  from './hostMessage';
 
 const INIT_MESSAGE_NAME = 'skype-sync-init';
@@ -33,7 +33,7 @@ export class Sync {
      * @param {(type: string, uid: string, payload?: string) => void} handler 
      * @memberof Sync
      */
-    public onReceive(handler: (message: MessageRequest) => void) {
+    public onReceive(handler: (message: Message) => void) {
         this.addinsHub.messageReceivedListener = handler;
     }
 
@@ -71,7 +71,7 @@ export class Sync {
      */
     public sendMessage(type: string, payload?: any) {
 
-        const message: MessageRequest = {
+        const message: Message = {
             type: type,
         };
 
@@ -84,7 +84,7 @@ export class Sync {
 
     public persistContent(content: any) {
 
-        const context: StoreContextRequest = {
+        const context: StoreContext = {
             payload: JSON.stringify(content),
         };
         this.addinsHub.storeContext(context);
@@ -121,7 +121,6 @@ export class Sync {
             .then(() => this.initHandler(this.configuration, this.setting))
     }
 }
-
 
 export interface ConfigItem {
     name: string;
