@@ -46,10 +46,10 @@ export default class AddinsHub {
 }
 
 export interface MessageRequest {
-    Type: string;
-    Payload?: string;
+    type: string;
+    payload?: string;
 }
 
 export interface StoreContextRequest {
-    Payload: string;
+    payload: string;
 }

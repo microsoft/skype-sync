@@ -72,11 +72,11 @@ export class Sync {
     public sendMessage(type: string, payload?: any) {
 
         const message: MessageRequest = {
-            Type: type,
+            type: type,
         };
 
         if (payload) {
-            message.Payload = JSON.stringify(payload);
+            message.payload = JSON.stringify(payload);
         }
 
         this.addinsHub.sendMessage(message);
@@ -85,7 +85,7 @@ export class Sync {
     public persistContent(content: any) {
 
         const context: StoreContextRequest = {
-            Payload: JSON.stringify(content),
+            payload: JSON.stringify(content),
         };
         this.addinsHub.storeContext(context);
     }
