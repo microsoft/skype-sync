@@ -24,14 +24,14 @@ export default class AddinsHub {
 
     public connect(url: string): Promise<void> {
 
-        this.hub = new signalr.HubConnection(url);
+        this.hub = new signalr.HubConnection(url, );
 
         this.hub.on('messageReceived', this.messageReceivedListener);
         this.hub.on('contextFetched', this.contextFetchedListener);
 
         return this.hub.start()
         .then(() => {
-            console.log('[SkypeSync]::skypeHub-connect-> OK');
+            
         })
         .catch(e => {
             console.error(e);

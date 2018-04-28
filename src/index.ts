@@ -22,7 +22,6 @@ export class Sync {
     private initReject?: () => void;
 
     constructor() {
-        console.log('[SkypeSync]::ctor');
         this.addinsHub = new AddinsHub();
 
         window.addEventListener('message', this.onHostMessageReceived);
@@ -35,7 +34,6 @@ export class Sync {
      * @memberof Sync
      */
     public onReceive(handler: (message: Message) => void) {
-        console.log('[SkypeSync]::onReceive - subscribed', handler);
         this.addinsHub.messageReceivedListener = handler;
     }
 
@@ -47,12 +45,10 @@ export class Sync {
      * @memberof Sync
      */
     public onContextLoaded(handler: (payload: string) => void) {
-        console.log('[SkypeSync]::onContextLoaded - subscribed', handler);
         this.addinsHub.contextFetchedListener = handler;
     }
 
     public onError(handler: (code: ErrorCodes) => void) {
-        console.log('[SkypeSync]::onError - subscribed', handler);
         this.errorHandler = handler;
     }
 
@@ -63,7 +59,6 @@ export class Sync {
      * @memberof Sync
      */
     public onInit(handler: (configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void) {
-        console.log('[SkypeSync]::onInit - subscribed', handler);
         this.initHandler = handler;
     }
 
@@ -76,8 +71,6 @@ export class Sync {
      * @memberof Sync
      */
     public sendMessage(type: string, payload?: any) {
-        console.log('[SkypeSync]::sendMessage', type, payload);
-
         const message: Message = {
             type: type,
         };
@@ -90,7 +83,6 @@ export class Sync {
     }
 
     public persistContent(content: any) {
-        console.log('[SkypeSync]::persistContent', content);
 
         const context: StoreContext = {
             payload: JSON.stringify(content),
@@ -99,12 +91,10 @@ export class Sync {
     }
 
     public fetchContent() {
-        console.log('[SkypeSync]::fetchContent');
         this.addinsHub.fetchContext();
     }
 
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
-        console.log('[SkypeSync]::onHostMessageReceived', messageEvent);
         
         if (!messageEvent ||messageEvent.source === window || !messageEvent.data) {
             return;
@@ -123,7 +113,6 @@ export class Sync {
 
     private onHostRequestedInit(data: AddinInitHostMessage) 
     {
-        console.log('[SkypeSync]::onHostRequestedInit', data);
         this.configuration = data.configuration;
         this.setting = data.setting;
         this.host = data.addinApiHost;
