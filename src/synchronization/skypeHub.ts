@@ -29,7 +29,14 @@ export default class AddinsHub {
         this.hub.on('messageReceived', this.messageReceivedListener);
         this.hub.on('contextFetched', this.contextFetchedListener);
 
-        return this.hub.start();
+        return this.hub.start()
+        .then(() => {
+            console.log('[SkypeSync]::skypeHub-connect-> OK');
+        })
+        .catch(e => {
+            console.error(e);
+            throw e;
+        })
     }
 
     public sendMessage(message: Message): Promise<void> {
