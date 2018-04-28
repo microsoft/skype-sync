@@ -106,7 +106,7 @@ export class Sync {
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
         console.log('[SkypeSync]::onHostMessageReceived', messageEvent);
         
-        if (!messageEvent ||messageEvent.source === window || !messageEvent.data || !messageEvent.origin || !messageEvent.origin.endsWith('.skype.com')) {
+        if (!messageEvent ||messageEvent.source === window || !messageEvent.data) {
             return;
         }
 
