@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import AddinsHub, { Message, StoreContext } from './synchronization/skypeHub';
+import {AddinsHub}  from './synchronization/skypeHub';
 import {HostMessage, AddinInitHostMessage}  from './hostMessage';
+import { ErrorCodes, ConfigurationValue, Message, StoreContext } from './interfaces';
 
 const INIT_MESSAGE_NAME = 'skype-sync-init';
 
@@ -126,24 +127,5 @@ export class Sync {
     }
 }
 
-export interface ConfigItem {
-    name: string;
-    value: string;
-}
-
-export interface InitMessageData {
-    configuration: Array<ConfigItem>;
-    settings: Array<ConfigItem>;
-}
-
-export enum ErrorCodes {
-    Undefined = 0,
-    NotInitialized = 1
-}
-
-export interface ConfigurationValue {
-    name: string;
-    value: string;
-}
 
 export default new Sync();

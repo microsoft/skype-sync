@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
+import { Message, StoreContext } from '../interfaces';
 
-export default class AddinsHub {
+export class AddinsHub {
 
     public messageReceivedListener: (message: Message) => void;
     public contextFetchedListener: (context: string) => void;
@@ -50,13 +51,4 @@ export default class AddinsHub {
     public fetchContext(): Promise<void> {
         return this.hub.invoke('fetchContext');
     }
-}
-
-export interface Message {
-    type: string;
-    payload?: string;
-}
-
-export interface StoreContext {
-    payload: string;
 }

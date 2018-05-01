@@ -1,4 +1,4 @@
-import { ConfigurationValue } from ".";
+import { ConfigurationValue } from "./interfaces";
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
