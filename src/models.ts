@@ -1,11 +1,22 @@
-export interface ConfigItem {
+export interface ConfigurationItem {
     name: string;
-    value: string;
+    question: string;
+    answerType: PredefinedAnsferType;
+    answerOptions: string;
+    required: boolean;
+    defaultValue: string;
+}
+
+export enum PredefinedAnsferType {
+    Undefiend = 0,
+    Text = 1,
+    Boolean = 2,
+    Option = 3
 }
 
 export interface InitMessageData {
-    configuration: Array<ConfigItem>;
-    settings: Array<ConfigItem>;
+    configuration: Array<ConfigurationItem>;
+    settings: Array<ConfigurationItem>;
 }
 
 export enum ErrorCodes {
@@ -17,7 +28,6 @@ export interface ConfigurationValue {
     name: string;
     value: string;
 }
-
 
 export interface Message {
     type: string;

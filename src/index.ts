@@ -4,10 +4,10 @@
 import {AddinsHub}  from './synchronization/skypeHub';
 
 import {AddinMessage, InitAddinMessage } from './hostMessage';
-export {AddinMessage, InitAddinMessage } from './hostMessage';
-
 import { InitContext, ErrorCodes, Message, StoreContext } from './models';
-export { InitContext, ErrorCodes, Message } from './models';
+
+export * from './hostMessage';
+export * from './models';
 
 export const addinEvents = {
     init: 'skype-sync-init',
