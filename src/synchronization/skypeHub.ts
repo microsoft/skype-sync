@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
-import { Message, StoreContext } from '..';
+import { Message, StoreContext } from '../models';
 
 export class AddinsHub {
 

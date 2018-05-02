@@ -2,9 +2,16 @@
 // Licensed under the MIT License.
 
 import {AddinsHub}  from './synchronization/skypeHub';
-import {HostMessage, AddinInitHostMessage}  from './hostMessage';
 
-const INIT_MESSAGE_NAME = 'skype-sync-init';
+import {AddinMessage, InitAddinMessage } from './hostMessage';
+export {AddinMessage, InitAddinMessage } from './hostMessage';
+
+import { InitContext, ErrorCodes, Message, StoreContext } from './models';
+export { InitContext, ErrorCodes, Message } from './models';
+
+export const events = {
+    init: 'skype-sync-init'
+}
 
 export class Sync {
 
@@ -98,18 +105,18 @@ export class Sync {
             return;
         }
 
-        const hostMessage: HostMessage = JSON.parse(messageEvent.data);
+        const hostMessage: AddinMessage = JSON.parse(messageEvent.data);
         switch (hostMessage.type) {
-            case INIT_MESSAGE_NAME:
+            case events.init:
                 // host requested init;
-                this.onHostRequestedInit(<AddinInitHostMessage>hostMessage);
+                this.onHostRequestedInit(<InitAddinMessage>hostMessage);
                 break;
             default:
                 console.error("Unknown host message of type:" + hostMessage.type);
         }
     }
 
-    private onHostRequestedInit(data: AddinInitHostMessage) 
+    private onHostRequestedInit(data: InitAddinMessage) 
     {
         this.host = data.addinApiHost;
 
@@ -130,43 +137,5 @@ export class Sync {
     }
 }
 
-export interface ConfigItem {
-    name: string;
-    value: string;
-}
-
-export interface InitMessageData {
-    configuration: Array<ConfigItem>;
-    settings: Array<ConfigItem>;
-}
-
-export enum ErrorCodes {
-    Undefined = 0,
-    NotInitialized = 1
-}
-
-export interface ConfigurationValue {
-    name: string;
-    value: string;
-}
-
-
-export interface Message {
-    type: string;
-    payload?: string;
-}
-
-export interface StoreContext {
-    payload: string;
-}
-
-export interface InitContext {
-    addinSessionId: string;
-    addinSessionUserId: string;
-    configuration: ConfigurationValue[];
-    sessionId: string;
-    settings: ConfigurationValue[];
-    token: string;
-}
 
 export default new Sync();

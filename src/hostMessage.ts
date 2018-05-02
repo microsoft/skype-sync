@@ -1,18 +1,19 @@
-import { ConfigurationValue } from '.';
+import { ConfigurationValue } from "./models";
+
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 /**
  * Set of attributes every host message has
  * 
- * @interface HostMessage
+ * @interface AddinMessage
  */
-export interface HostMessage {
+export interface AddinMessage {
     /**
      * Type of message host is sending
      * 
      * @type {string}
-     * @memberof AddinInitHostMessage
+     * @memberof AddinMessage
      */
     type: string;
     
@@ -20,7 +21,7 @@ export interface HostMessage {
      * Unique string identifier of the addin
      * 
      * @type {string}
-     * @memberof HostMessage
+     * @memberof AddinMessage
      */
     manifestIdentifier: string;
 }
@@ -31,9 +32,9 @@ export interface HostMessage {
  * to ready state.
  * 
  * @interface AddinInitHostMessage
- * @extends {HostMessage}
+ * @extends {AddinMessage}
  */
-export interface AddinInitHostMessage extends HostMessage {
+export interface InitAddinMessage extends AddinMessage {
     
     /**
      * Unique hashed session id addin has in a given meeting 
