@@ -9,12 +9,10 @@ const INIT_MESSAGE_NAME = 'skype-sync-init';
 export class Sync {
 
     private errorHandler: (code: ErrorCodes) => void;
-    private initHandler: (configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void
+    private initHandler: (context: InitContext) => void
 
     private host: string;
-    private addinToken: string;
-    private configuration: ConfigurationValue[];
-    private setting: ConfigurationValue[];
+    private addinContext: InitContext;
 
     private addinsHub: AddinsHub;
 
@@ -58,7 +56,7 @@ export class Sync {
      * @param {(configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void} handler 
      * @memberof Sync
      */
-    public onInit(handler: (configuration: ConfigurationValue[], settings: ConfigurationValue[]) => void) {
+    public onInit(handler: (context: InitContext) => void) {
         this.initHandler = handler;
     }
 
@@ -113,15 +111,21 @@ export class Sync {
 
     private onHostRequestedInit(data: AddinInitHostMessage) 
     {
-        this.configuration = data.configuration;
-        this.setting = data.setting;
         this.host = data.addinApiHost;
 
         var addinUrl = `${data.addinApiHost}/hubs/addins?token=${data.addinToken}`;
         this.addinsHub.connect(addinUrl)
             .then(() => {
                 console.log('[SkypeSync]::onHostRequestedInit-connected', addinUrl);
-                this.initHandler(this.configuration, this.setting)
+                var context: InitContext = {
+                    addinSessionId: data.addinSessionId,
+                    addinSessionUserId: data.addinSessionUserId,
+                    configuration: data.configuration,
+                    sessionId: data.sessionId,
+                    settings: data.setting,
+                    token: data.addinToken,
+                };
+                this.initHandler(context);
             })
     }
 }
@@ -156,5 +160,13 @@ export interface StoreContext {
     payload: string;
 }
 
+export interface InitContext {
+    addinSessionId: string;
+    addinSessionUserId: string;
+    configuration: ConfigurationValue[];
+    sessionId: string;
+    settings: ConfigurationValue[];
+    token: string;
+}
 
 export default new Sync();

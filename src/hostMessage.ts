@@ -34,6 +34,31 @@ export interface HostMessage {
  * @extends {HostMessage}
  */
 export interface AddinInitHostMessage extends HostMessage {
+    
+    /**
+     * Unique hashed session id addin has in a given meeting 
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    addinSessionId: string;
+    
+    /**
+     * Unique hashed id of user in a given addin session.
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    addinSessionUserId: string;
+
+    /**
+     * Unique hashed id of the meeting in which addins is created
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    sessionId: string;
+
     /**
      * Url of the addins api host
      * 
