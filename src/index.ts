@@ -9,8 +9,10 @@ export {AddinMessage, InitAddinMessage } from './hostMessage';
 import { InitContext, ErrorCodes, Message, StoreContext } from './models';
 export { InitContext, ErrorCodes, Message } from './models';
 
-export const events = {
-    init: 'skype-sync-init'
+export const addinEvents = {
+    init: 'skype-sync-init',
+    auth: 'skype-sync-auth',
+    telemetry: 'skype-sync-telemetry',
 }
 
 export class Sync {
@@ -107,7 +109,7 @@ export class Sync {
 
         const hostMessage: AddinMessage = JSON.parse(messageEvent.data);
         switch (hostMessage.type) {
-            case events.init:
+            case addinEvents.init:
                 // host requested init;
                 this.onHostRequestedInit(<InitAddinMessage>hostMessage);
                 break;
