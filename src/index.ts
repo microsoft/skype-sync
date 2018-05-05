@@ -82,12 +82,20 @@ export class Sync implements SkypeSync {
     public fetchContent() : Promise<string> {
         return new Promise<string>((success, fail) => {
             var timeout = setTimeout(() => {
-                fail(this.errorHandler("[SkypeSync]::fetchContent-timeout 5000"));
+                fail("[SkypeSync]::fetchContent-timeout 5000");
             }, 5000)
 
             this.contextFetchHandler = (payload: string) => {
                 console.log("[SkypeSync]:contextFetched", payload);
-                success(JSON.parse(payload));
+                
+                try {
+                    const context = JSON.parse(payload);
+                    success(context);
+                } 
+                catch (e) {
+                    fail(e);
+                }
+
                 clearTimeout(timeout);
             };
             
