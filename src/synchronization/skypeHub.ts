@@ -2,53 +2,80 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
-import { Message, StoreContext } from '../models';
+import { Message} from '../models';
+import { AddinsHub, SkypeSync } from '../interfaces';
 
-export class AddinsHub {
-
-    public messageReceivedListener: (message: Message) => void;
-    public contextFetchedListener: (context: string) => void;
+/**
+ * Addins hub is a socket server endpoint supporting the addins messaging needs
+ * enabling generic infrastructure for addin context synchronization between addin session users
+ * 
+ * @export
+ * @class AddinsHub
+ */
+export class SkypeHub implements AddinsHub {
 
     private hub: signalr.HubConnection;
-
-    constructor() {
-
-        // default NOP listeners
-        this.messageReceivedListener = (message: Message) => {
-            console.log('[AddinsHub]::NOP-:message received:', message);
-        }
-        
-        this.contextFetchedListener = (context: string) => {
-            console.log('[AddinsHub]::NOP-context received:', context);
-        }
+    constructor(private syncSdk: SkypeSync) {
     }
 
+    /**
+     * Initialize the connection with the socket server endpoint 
+     * located on a given endpoint
+     * 
+     * @param {string} url 
+     * @returns {Promise<void>} 
+     * @memberof AddinsHub
+     */
     public connect(url: string): Promise<void> {
 
-        this.hub = new signalr.HubConnection(url, );
+        this.hub = new signalr.HubConnection(url);
 
-        this.hub.on('messageReceived', this.messageReceivedListener);
-        this.hub.on('contextFetched', this.contextFetchedListener);
+        this.hub.on('messageReceived', message => {
+            console.log('[[SkypeSync][AddinsHub]:onMessageReceived]', message);
+            this.syncSdk.messageHandler(message);
+        });
+        this.hub.on('contextFetched', ctx => {
+            console.log('[[SkypeSync][AddinsHub]:onContextFetched]', ctx);
+            this.syncSdk.contextFetchHandler(ctx);
+        });
 
-        return this.hub.start()
-        .then(() => {
-            
-        })
-        .catch(e => {
-            console.error(e);
-            throw e;
-        })
+        console.log('[SkypeSync][AddinsHub]::connect - hub:' , url);
+        
+        return this.hub.start();
     }
 
+    /**
+     * Sends a message to the hub to the other users participating in the same addin session.
+     * 
+     * @param {Message} message 
+     * @returns {Promise<void>} 
+     * @memberof AddinsHub
+     */
     public sendMessage(message: Message): Promise<void> {
+        console.log('[SkypeSync][AddinsHub]::sendMessage', message);
         return this.hub.invoke('sendMessage', message);
     }
 
-    public storeContext(context: StoreContext): Promise<void> {
+    /**
+     * Sends a command to the hub to persist given addin session context for later use
+     * 
+     * @param {StoreContext} context 
+     * @returns {Promise<void>} 
+     * @memberof AddinsHub
+     */
+    public storeContext(context: string): Promise<void> {
+        console.log('[SkypeSync][AddinsHub]::storeContext', context);
         return this.hub.invoke('storeContext', context);
     }
 
+    /**
+     * Sends a command to the hub to retrieve previously persisted context
+     * 
+     * @returns {Promise<void>} 
+     * @memberof AddinsHub
+     */
     public fetchContext(): Promise<void> {
+        console.log('[SkypeSync][AddinsHub]::fetchContext');
         return this.hub.invoke('fetchContext');
     }
 }
