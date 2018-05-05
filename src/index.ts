@@ -31,8 +31,6 @@ export class Sync implements SkypeSync {
     private addinContext: InitContext;
     private addinsHub: AddinsHub;
 
-    private lastHostMessage: string;
-
     constructor() {
         this.defaultListeners();
         window.addEventListener('message', this.onHostMessageReceived);
@@ -104,12 +102,12 @@ export class Sync implements SkypeSync {
 
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
         
-        if (!messageEvent || messageEvent.source === window || !messageEvent.data || messageEvent.origin != this.origin) {
+        if (!messageEvent || messageEvent.source === window || !messageEvent.data || !messageEvent.origin) {
             return;
         }
 
-        if (this.lastHostMessage == messageEvent.data) {
-
+        if (this.origin && messageEvent.origin != this.origin) {
+            return
         }
 
         console.log('[SkypeSync]:onHostMessageReceived - processing message', messageEvent);
@@ -117,7 +115,6 @@ export class Sync implements SkypeSync {
         const hostMessage: AddinMessage = JSON.parse(messageEvent.data);
         switch (hostMessage.type) {
             case addinEvents.init:
-                // host requested init;
                 this.onHostRequestedInit(<InitAddinMessage>hostMessage);
                 break;
             default:
