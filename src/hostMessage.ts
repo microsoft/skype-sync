@@ -1,10 +1,11 @@
-import { ConfigurationValue } from "./models";
-
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+import { ConfigurationValue } from "./models";
+
+
 /**
- * Set of attributes every host message has
+ * Set of attributes every message host sends to addins has
  * 
  * @interface AddinMessage
  */
@@ -95,4 +96,12 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof AddinInitHostMessage
      */
     setting: ConfigurationValue[];
+
+    /**
+     * Valid origin to accept post messages from 
+     * 
+     * @type {string}
+     * @memberof InitAddinMessage
+     */
+    origin: string;
 }
