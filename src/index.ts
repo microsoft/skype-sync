@@ -169,11 +169,6 @@ export class Sync implements SkypeSync {
             console.log("[SkypeSync]:contextFetchHandler", context);
         }
 
-
-        console.log = (message: string, ...optionalParams: any[]) => {
-            console.log("[SkypeSync]:logHandler:" + message, optionalParams);
-        }
-
         this.errorHandler  = (message: string, ...optionalParams: any[]) => {
             console.error("[SkypeSync]:errorHandler-" + message, optionalParams);
         }
