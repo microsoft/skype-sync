@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { InitContext, Message, ConfigurationValue, CoreInitContext } from "./models";
+import { InitContext, Message, CoreInitContext } from "./models";
 import { InitAddinMessage } from "./hostMessage";
 
 /**

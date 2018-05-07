@@ -32,6 +32,10 @@ export interface Message {
     payload?: string;
 }
 
+export interface AddinReadyMessage {
+    type: string;
+}
+
 /**
  * Initialization
  * 

@@ -3,7 +3,6 @@
 
 import { ConfigurationValue } from "./models";
 
-
 /**
  * Set of attributes every message host sends to addins has
  * 
@@ -17,7 +16,7 @@ export interface AddinMessage {
      * @memberof AddinMessage
      */
     type: string;
-    
+
     /**
      * Unique string identifier of the addin
      * 
@@ -36,7 +35,7 @@ export interface AddinMessage {
  * @extends {AddinMessage}
  */
 export interface InitAddinMessage extends AddinMessage {
-    
+
     /**
      * Unique hashed session id addin has in a given meeting 
      * 
@@ -44,7 +43,7 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof AddinInitHostMessage
      */
     addinSessionId: string;
-    
+
     /**
      * Unique hashed id of user in a given addin session.
      * 
@@ -68,7 +67,7 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof AddinInitHostMessage
      */
     addinApiHost: string;
-    
+
     /**
      * 
      * Token which addin will send as bearer authorization header in 

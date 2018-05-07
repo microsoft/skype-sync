@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
-import { Message} from '../models';
+import { Message } from '../models';
 import { AddinsHub, SkypeSync } from '../interfaces';
 
 /**
@@ -15,6 +15,7 @@ import { AddinsHub, SkypeSync } from '../interfaces';
 export class SkypeHub implements AddinsHub {
 
     private hub: signalr.HubConnection;
+
     constructor(private syncSdk: SkypeSync) {
     }
 
@@ -35,8 +36,8 @@ export class SkypeHub implements AddinsHub {
             this.syncSdk.messageHandler(message);
         });
 
-        console.log('[SkypeSync][AddinsHub]::connect - hub:' , url);
-        
+        console.log('[SkypeSync][AddinsHub]::connect - hub:', url);
+
         return this.hub.start();
     }
 
