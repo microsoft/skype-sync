@@ -29,15 +29,6 @@ export interface SkypeSync {
 
     /**
      * 
-     * Event handler handling the receiving of a message from the addin server
-     * containing the earlier persisted context of a current addin session 
-     * 
-     * @memberof SkypeSync
-     */
-    contextFetchHandler: (context: string) => void;
-
-    /**
-     * 
      * Event handler which is handling the errors occurring in the sdk.
      * 
      * @memberof SkypeSync
@@ -94,7 +85,7 @@ export interface AddinsHub {
      /**
      * Sends a command to the hub to persist given addin session context for later use
      * 
-     * @param {string} context 
+     * @param {string} context Addin session context which needs to be persisted on the server for later use.
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
@@ -102,10 +93,10 @@ export interface AddinsHub {
     storeContext(context: string): Promise<void>
     
     /**
-     * Sends a command to the hub to retrieve previously persisted context
+     * Retrieve previously persisted context from the hub.
      * 
-     * @returns {Promise<void>} 
+     * @returns {Promise<string>} Previously persisted context (if any)
      * @memberof AddinsHub
      */
-    fetchContext(): Promise<void>
+    fetchContext(): Promise<string>
 }
