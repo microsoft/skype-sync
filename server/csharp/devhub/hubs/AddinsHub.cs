@@ -30,18 +30,17 @@ namespace Microsoft.Skype.Interviews.Samples.DevHub.hubs
             }
         }
 
-        public void FetchContext()
+        public string FetchContext()
         {
             if (ConnectionInfo.TryGetValue(this.Context.ConnectionId, out var tokenInfo))
             {
                 if (SessionContext.TryGetValue(tokenInfo.asid, out var context))
                 {
-                    this.Clients.Caller.contextFetched(context);
-                    return;
+                    return context;
                 }
             }
 
-            this.Clients.Caller.contextFetched("");
+            return null;
         }
 
         public override async Task OnConnectedAsync()
@@ -56,7 +55,7 @@ namespace Microsoft.Skype.Interviews.Samples.DevHub.hubs
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            ConnectionInfo.TryRemove(this.Context.ConnectionId, out var token);
+            ConnectionInfo.TryRemove(this.Context.ConnectionId, out _);
             return base.OnDisconnectedAsync(exception);
        }
     }

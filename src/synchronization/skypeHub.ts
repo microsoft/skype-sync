@@ -34,10 +34,6 @@ export class SkypeHub implements AddinsHub {
             console.log('[[SkypeSync][AddinsHub]:onMessageReceived]', message);
             this.syncSdk.messageHandler(message);
         });
-        this.hub.on('contextFetched', ctx => {
-            console.log('[[SkypeSync][AddinsHub]:onContextFetched]', ctx);
-            this.syncSdk.contextFetchHandler(ctx);
-        });
 
         console.log('[SkypeSync][AddinsHub]::connect - hub:' , url);
         
@@ -69,12 +65,12 @@ export class SkypeHub implements AddinsHub {
     }
 
     /**
-     * Sends a command to the hub to retrieve previously persisted context
+     * Retrieve previously persisted context from the hub.
      * 
-     * @returns {Promise<void>} 
+     * @returns {Promise<string>} Previously persisted context (if any)
      * @memberof AddinsHub
      */
-    public fetchContext(): Promise<void> {
+    public fetchContext(): Promise<string> {
         console.log('[SkypeSync][AddinsHub]::fetchContext');
         return this.hub.invoke('fetchContext');
     }

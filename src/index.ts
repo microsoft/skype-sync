@@ -23,7 +23,6 @@ export class Sync implements SkypeSync {
     public initHandler: (context: InitContext) => void
     
     public  messageHandler: (message: Message) => void;
-    public  contextFetchHandler: (context: string) => void;
     public  errorHandler: (message: string, ...optionalParams: any[]) => void;
 
     private origin: string;
@@ -77,36 +76,15 @@ export class Sync implements SkypeSync {
     /**
      * Fetch the content of previous addin session state so user can continue his addin session. 
      * 
+     * @returns {(Promise<string|void>)} 
      * @memberof Sync
      */
-    public fetchContent() : Promise<string> {
-        return new Promise<string>((success, fail) => {
-            var timeout = setTimeout(() => {
-                fail("[SkypeSync]::fetchContent-timeout 5000");
-            }, 5000)
-
-            this.contextFetchHandler = (payload: string) => {
-                console.log("[SkypeSync]:contextFetched", payload);
-                
-                try {
-                    const context = JSON.parse(payload);
-                    success(context);
-                } 
-                catch (e) {
-                    fail(e);
-                }
-
-                clearTimeout(timeout);
-            };
-            
-            this.addinsHub.fetchContext()
-                .catch(e => {
-                    this.errorHandler("[SkypeSync]:fetchContent FAIL", e);
-                });
-        })
+    public fetchContent() : Promise<string|void> {
+         return this.addinsHub.fetchContext()
+             .catch(e => {
+                this.errorHandler("[SkypeSync]:fetchContext - error", e);
+             });
     }
-    
-    
 
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
         
@@ -115,12 +93,17 @@ export class Sync implements SkypeSync {
         }
 
         if (this.origin && messageEvent.origin != this.origin) {
-            return
+            return;
+        }
+
+
+        const hostMessage: AddinMessage = JSON.parse(messageEvent.data);
+        if (!hostMessage || !hostMessage.type) {
+            return;
         }
 
         console.log('[SkypeSync]:onHostMessageReceived - processing message', messageEvent);
 
-        const hostMessage: AddinMessage = JSON.parse(messageEvent.data);
         switch (hostMessage.type) {
             case addinEvents.init:
                 this.onHostRequestedInit(<InitAddinMessage>hostMessage);
@@ -169,11 +152,6 @@ export class Sync implements SkypeSync {
         this.messageHandler  = (message: Message) => {
             console.log("[SkypeSync]:messageHandler", message);
         }
-
-        this.contextFetchHandler  = (context: string) => {
-            console.log("[SkypeSync]:contextFetchHandler", context);
-        }
-
         this.errorHandler  = (message: string, ...optionalParams: any[]) => {
             console.error("[SkypeSync]:errorHandler-" + message, optionalParams);
         }

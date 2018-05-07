@@ -21,9 +21,9 @@ export class NullHub implements AddinsHub {
         return Promise.resolve();
     }
     
-    public fetchContext(): Promise<void> {
+    public fetchContext(): Promise<string> {
         console.log('[SkypeSync][NullHub]:fetchContext');
-        return Promise.resolve();
+        return Promise.resolve(null);
     }
 
 
