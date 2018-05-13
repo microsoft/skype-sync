@@ -2,35 +2,38 @@
 
 Skype Sync allows you create shared experiences across different Skype Interviews instances.
 
+It is a very simple SDK providing essentially two functions:
+
+1. Messaging between the addins instances
+2. Session context management
+
 ## Getting started
 
 Let's assume we are building a simplified synchronized note pad app.
 
 1. Import the Sync SDK
+
 ```js
 import Sync from 'skype-sync'
 ```
 
-2. Make sure to setup initialization handlers to accomondate for your UI.
+2. Make sure to setup initialization handlers to accommodate for your UI.
+
 ```js
-Sync.onInit((configuration) => {
+Sync.initHandler = (context: InitContext) => {
   // initialize your application with given configuration
 })
 ```
 
-where configuration is handler
-```js
-handler: (context: InitContext) => void
-```
-and InitContext contains 
+more info: [InitContext](https://github.com/Microsoft/skype-sync/blob/418f9406e8a048b8ab8f335639445206bff7868c/src/models.ts#L46)
 
 
 ## Broadcast actions
 
-When our notepad wants to send out new actions to the other instances, the app just calls `send(type, payload)` to broadcast its information. 
+Most of the addins are collaborative so in order to send out a message to other meeting participants using the addin,simply call the send message `sendMessage(type:string, payload?:any)` to broadcast the message.
 
 ```js
-Sync.send('ADD_NOTE', {
+Sync.sendMessage('ADD_NOTE', {
   message: textInput.value,
   author: this.state.author
 })
@@ -38,20 +41,19 @@ Sync.send('ADD_NOTE', {
 
 ## Receive actions
 
-To handle incoming messages the app needs to pass an event handler to the `onReceive((type, payload) => any)` function.
-
-When our notepad receives a new action, we can do a switch case on the action type. Then we divert it to the correct function to handle the payload of the action.
+To handle incoming messages the app needs to register message event handler to which the sent messages of other participants will be sent.
+load of the action.
 
 ```js
-Sync.onReceive((type, payload) => {
-  switch (type) {
+Sync.messageHandler((message: Message) => {
+  switch (message.type) {
     case 'ADD_NOTE':
       // handle adding new note
-      addNote(payload)
+      addNote(message.payload)
       break
     case 'DELETE_NOTE':
       // handle deleting a note
-      deleteNote(payload)
+      deleteNote(message.payload)
       break
     default:
       return
@@ -59,28 +61,33 @@ Sync.onReceive((type, payload) => {
 })
 ```
 
+more info: [Message](https://github.com/Microsoft/skype-sync/blob/418f9406e8a048b8ab8f335639445206bff7868c/src/models.ts#L30)
+
 ## Persist content
 
-Skype Interviews offers long-term storage for your content to have it persist across multiple sessions. Users who close their browser and come back to the session in a few days will be able to pick up the session from where they left off.
+Skype Interviews offers turn key long-term storage for your addin content to have it persist across multiple sessions. Users who close their browser and come back to the session in a few days will be able to pick up the session from where they left off. 
+For example, the diagram you made using Skype Interviews Whiteboard will be shown every time you or recruiter open the interview link. 
 
 ### Persist your content across sessions
-Put in any javascript object and we're going to persist it for this session.
+
+Put in any javascript object and we're going to persist it for this session as JSON serialized string.
+
 ```js
-Sync.persistContent(notes)
+Sync.persistContent(context)
 ```
 
 ### Load persisted content
-To retrieve the persisted content, set up a handler. Then call the `loadPersistedContent()` method to initiate a request to fetch the stored content.
+
+To retrieve the previously persisted content, simply call the `fetchContent():Promise<string>` method to initiate a request to fetch the stored content. 
+
 ```js
-Sync.onPersistedContentLoaded((content) => {
-  app.state.notes = content
-})
-Sync.loadPersistedContent()
+Sync.fetchContent()
+    .then(content) => {
+      app.state.notes = content
+    })
 ```
 
-
-
-# Contributing
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
