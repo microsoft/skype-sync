@@ -289,3 +289,5 @@ __pycache__/
 
 # NPM Package
 dist
+
+.vscode
