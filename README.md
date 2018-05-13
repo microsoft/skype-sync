@@ -13,10 +13,17 @@ import Sync from 'skype-sync'
 
 2. Make sure to setup initialization handlers to accomondate for your UI.
 ```js
-Sync.init((configuration) => {
+Sync.onInit((configuration) => {
   // initialize your application with given configuration
 })
 ```
+
+where configuration is handler
+```js
+handler: (context: InitContext) => void
+```
+and InitContext contains 
+
 
 ## Broadcast actions
 
