@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
-import { Message } from '../models';
+
 import { AddinsHub, SkypeSync } from '../interfaces';
+import { Message } from '../models';
 
 /**
  * Addins hub is a socket server endpoint supporting the addins messaging needs

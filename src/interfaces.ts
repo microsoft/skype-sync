@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { InitContext, Message, CoreInitContext } from "./models";
-import { InitAddinMessage } from "./hostMessage";
+import { CoreInitContext, InitContext, Message } from './models';
 
 /**
  * Contracts the public behaviors Skype Sync SDK provides to the hosts using it 
@@ -49,7 +48,7 @@ export interface SkypeSync {
      * Skype Interview addins.
      * @memberof SkypeSync
      */
-    ___devInit( addinSessionId: string, context?: CoreInitContext);
+    ___devInit(addinSessionId: string, context?: CoreInitContext);
 }
 
 export interface AddinsHub {
@@ -72,15 +71,6 @@ export interface AddinsHub {
      * @memberof AddinsHub
      */
     connect(url: string): Promise<void>;
-
-    /**
-     * Sends a message to the hub to the other users participating in the same addin session.
-     * 
-     * @param {Message} message 
-     * @returns {Promise<void>} 
-     * @memberof AddinsHub
-     */
-    sendMessage(message: Message): Promise<void>;
     
      /**
      * Sends a command to the hub to persist given addin session context for later use
@@ -90,7 +80,7 @@ export interface AddinsHub {
      * @memberof AddinsHub
      */
     
-    storeContext(context: string): Promise<void>
+    storeContext(context: string): Promise<void>;
     
     /**
      * Retrieve previously persisted context from the hub.
@@ -98,5 +88,5 @@ export interface AddinsHub {
      * @returns {Promise<string>} Previously persisted context (if any)
      * @memberof AddinsHub
      */
-    fetchContext(): Promise<string>
+    fetchContext(): Promise<string>;
 }

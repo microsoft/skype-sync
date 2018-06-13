@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { Message } from './../models';
 import { AddinsHub } from '../interfaces';
+import { Message } from './../models';
 
 export class NullHub implements AddinsHub {
 
