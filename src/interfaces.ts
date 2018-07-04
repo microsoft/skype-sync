@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { CoreInitContext, InitContext, Message } from './models';
+import { ConnectionState, CoreInitContext, InitContext, Message } from './models';
 
 /**
  * Contracts the public behaviors Skype Sync SDK provides to the hosts using it 
@@ -33,6 +33,14 @@ export interface SkypeSync {
      * @memberof SkypeSync
      */
     errorHandler: (e: any) => void;
+
+    /**
+     * 
+     * Event handler which is handling the changes of the connection state changes.
+     * 
+     * @memberof SkypeSync
+     */
+    connectionHandler: (connectionState: ConnectionState) => void;
 
     /**
      * Initialize the SDK in the development mode suitable for addin development.

@@ -5,7 +5,7 @@ import { SkypeHub } from './synchronization/skypeHub';
 
 import { AddinMessage, InitAddinMessage } from './hostMessage';
 import { AddinsHub, SkypeSync } from './interfaces';
-import { AddinReadyMessage, CoreInitContext, InitContext, Message } from './models';
+import { AddinReadyMessage, ConnectionState, CoreInitContext, InitContext, Message } from './models';
 import { NullHub } from './synchronization/nullHub';
 
 export * from './hostMessage';
@@ -26,6 +26,8 @@ export class Sync implements SkypeSync {
 
     public messageHandler: (message: Message) => void;
     public errorHandler: (message: string, ...optionalParams: any[]) => void;
+
+    public connectionHandler: (connectionState: ConnectionState) => void;
 
     private origin: string;
     private host: string;
@@ -127,12 +129,14 @@ export class Sync implements SkypeSync {
             this.addinsHub = new SkypeHub(this);
         } else {
             this.addinsHub = new NullHub();
+            this.connectionHandler(ConnectionState.Connected);
         }
 
         const addinUrl = `${data.addinApiHost}/hubs/addins?token=${data.addinToken}`;
 
         this.addinsHub.connect(addinUrl)
             .then(() => {
+                this.connectionHandler(ConnectionState.Connected);
                 console.log('[SkypeSync]::onHostRequestedInit-connected', addinUrl);
                 const context: InitContext = {
                     addinSessionId: data.addinSessionId,
@@ -157,6 +161,10 @@ export class Sync implements SkypeSync {
 
         this.errorHandler = (message: string, ...optionalParams: any[]) => {
             console.error('[SkypeSync]:errorHandler-' + message, optionalParams);
+        };
+
+        this.connectionHandler = (connectionState: ConnectionState) => {
+            console.log('[SkypeSync]:connectionHandler', connectionState);
         };
     }
 

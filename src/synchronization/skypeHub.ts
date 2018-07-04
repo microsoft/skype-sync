@@ -4,7 +4,7 @@
 import signalr = require('@aspnet/signalr');
 
 import { AddinsHub, SkypeSync } from '../interfaces';
-import { Message } from '../models';
+import { ConnectionState, Message } from '../models';
 
 /**
  * Addins hub is a socket server endpoint supporting the addins messaging needs
@@ -29,12 +29,20 @@ export class SkypeHub implements AddinsHub {
      * @memberof AddinsHub
      */
     public connect(url: string): Promise<void> {
+        this.syncSdk.connectionHandler(ConnectionState.Connecting);
+        this.hub = new signalr.HubConnectionBuilder()
+            .withUrl(url)
+            .configureLogging(signalr.LogLevel.Error)
+            .build();
 
-        this.hub = new signalr.HubConnection(url);
-
-        this.hub.on('messageReceived', message => {
+        this.hub.on('messageReceived', (message: Message) => {
             console.log('[[SkypeSync][AddinsHub]:onMessageReceived]', message);
             this.syncSdk.messageHandler(message);
+        });
+
+        this.hub.on('forceReconnect', (hubHost: string) => {
+            console.log('[[SkypeSync][AddinsHub]:forceReconnect]', hubHost);
+            this.connect(hubHost);
         });
 
         console.log('[SkypeSync][AddinsHub]::connect - hub:', url);

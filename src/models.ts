@@ -17,6 +17,13 @@ export enum PredefinedAnswerType {
     Option = 3
 }
 
+export enum ConnectionState {
+    Undefined = 0,
+    Connecting = 1,
+    Connected = 2,
+    Disconnected = 3
+}
+
 export interface InitMessageData {
     configuration: Array<ConfigurationItem>;
     settings: Array<ConfigurationItem>;
