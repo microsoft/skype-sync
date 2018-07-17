@@ -26,7 +26,6 @@ export enum ConnectionState {
 
 export interface InitMessageData {
     configuration: Array<ConfigurationItem>;
-    settings: Array<ConfigurationItem>;
 }
 
 export interface ConfigurationValue {

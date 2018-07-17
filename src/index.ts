@@ -143,7 +143,6 @@ export class Sync implements SkypeSync {
                     addinSessionUserId: data.addinSessionUserId,
                     configuration: data.configuration,
                     sessionId: data.sessionId,
-                    settings: data.setting,
                     token: data.addinToken
                 };
                 this.initHandler(context);
@@ -219,7 +218,6 @@ export class Sync implements SkypeSync {
             manifestIdentifier: addinId,
             sessionId: addinSessionId,
             type: addinEvents.init,
-            setting: context.settings || [],
             configuration: context.configuration || [],
             origin: context.origin || 'http://localhost:3000',
             addinToken: JSON.stringify({
