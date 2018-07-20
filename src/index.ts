@@ -143,7 +143,8 @@ export class Sync implements SkypeSync {
                     addinSessionUserId: data.addinSessionUserId,
                     configuration: data.configuration,
                     sessionId: data.sessionId,
-                    token: data.addinToken
+                    token: data.addinToken,
+                    language: data.language
                 };
                 this.initHandler(context);
             });
@@ -203,6 +204,7 @@ export class Sync implements SkypeSync {
      * Skype Interview addins.
      * @memberof SkypeSync
      */
+    // tslint:disable-next-line member-ordering
     public ___devInit(addinSessionId: string, context?: CoreInitContext) {
 
         if (!context) {
@@ -226,7 +228,8 @@ export class Sync implements SkypeSync {
                 auid: sessionUserId,
                 sid: addinSessionId
             }),
-        }
+            language: 'en'
+        };
         console.log('[SkypeSync]::___devInit -> starting...', data);
         this.onHostRequestedInit(data);
     }

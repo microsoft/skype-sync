@@ -94,4 +94,12 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof InitAddinMessage
      */
     origin: string;
+
+    /**
+     * Language used in the hosting application.
+     * 
+     * @type {string}
+     * @memberof InitAddinMessage
+     */
+    language: string;
 }

@@ -25,7 +25,7 @@ export enum ConnectionState {
 }
 
 export interface InitMessageData {
-    configuration: Array<ConfigurationItem>;
+    configuration: ConfigurationItem[];
 }
 
 export interface ConfigurationValue {
@@ -82,6 +82,14 @@ export interface InitContext extends CoreInitContext {
      * @memberof InitContext
      */
     token: string;
+
+    /**
+     * User's language used in the session.
+     * 
+     * @type {string}
+     * @memberof InitContext
+     */
+    language: string;
 }
 
 /**
