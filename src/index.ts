@@ -20,7 +20,7 @@ export const addinEvents = {
     unlock: 'skype-sync-unlock'
 };
 
-export class Sync implements SkypeSync {
+class Sync implements SkypeSync {
 
     public initHandler: (context: InitContext) => void;
 
@@ -32,11 +32,31 @@ export class Sync implements SkypeSync {
     private origin: string;
     private host: string;
     private addinsHub: AddinsHub;
+    private addinToken: string;
 
     constructor() {
         this.defaultListeners();
         window.addEventListener('message', this.onHostMessageReceived);
         this.indicateReadyStateIfNeeded();
+    }
+
+    /**
+     * Connects SkypeSync to the Signaling Service.
+     * 
+     * @memberof SkypeSync
+     */
+    public connect(): Promise<void> {
+        if (!this.addinsHub) {
+            this.errorHandler('Skype sync is not initialized. Wait for the init handler to be fired.');
+            return;
+        }
+
+        const addinUrl = `${this.addinsHub}/hubs/addins`;
+        return this.addinsHub.connect(addinUrl, this.addinToken)
+            .then(() => {
+                this.connectionHandler(ConnectionState.Connected);
+                console.log('[SkypeSync]::onHostRequestedInit-connected', addinUrl);
+            });
     }
 
     /**
@@ -115,7 +135,7 @@ export class Sync implements SkypeSync {
                 this.onHostRequestedInit(hostMessage as InitAddinMessage);
                 break;
             default:
-                this.errorHandler('[SkypeSync]:onHostMessageReceived - Unknown host message of type:' + hostMessage.type);
+                console.warn('[SkypeSync]:onHostMessageReceived - Unknown host message of type:' + hostMessage.type);
         }
     }
 
@@ -124,6 +144,7 @@ export class Sync implements SkypeSync {
 
         this.host = data.addinApiHost;
         this.origin = data.origin;
+        this.addinToken = data.addinToken;
 
         if (this.host) {
             this.addinsHub = new SkypeHub(this);
@@ -132,22 +153,15 @@ export class Sync implements SkypeSync {
             this.connectionHandler(ConnectionState.Connected);
         }
 
-        const addinUrl = `${data.addinApiHost}/hubs/addins?token=${data.addinToken}`;
-
-        this.addinsHub.connect(addinUrl)
-            .then(() => {
-                this.connectionHandler(ConnectionState.Connected);
-                console.log('[SkypeSync]::onHostRequestedInit-connected', addinUrl);
-                const context: InitContext = {
-                    addinSessionId: data.addinSessionId,
-                    addinSessionUserId: data.addinSessionUserId,
-                    configuration: data.configuration,
-                    sessionId: data.sessionId,
-                    token: data.addinToken,
-                    language: data.language
-                };
-                this.initHandler(context);
-            });
+        const context: InitContext = {
+            addinSessionId: data.addinSessionId,
+            addinSessionUserId: data.addinSessionUserId,
+            configuration: data.configuration,
+            sessionId: data.sessionId,
+            token: data.addinToken,
+            language: data.language
+        };
+        this.initHandler(context);
     }
 
     private defaultListeners() {

@@ -13,7 +13,14 @@ import { ConnectionState, CoreInitContext, InitContext, Message } from './models
 export interface SkypeSync {
 
     /**
-     * Handler which will be invoked once the addin is initialized and ready for work
+     * Connects SkypeSync to the Signal Service.
+     * 
+     * @memberof SkypeSync
+     */
+    connect: () => Promise<void>;
+
+    /**
+     * Handler which will be invoked once the addin is initialized and ready for work.
      * 
      * @memberof SkypeSync
      */
@@ -78,7 +85,7 @@ export interface AddinsHub {
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
-    connect(url: string): Promise<void>;
+    connect(url: string, token: string): Promise<void>;
     
      /**
      * Sends a command to the hub to persist given addin session context for later use

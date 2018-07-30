@@ -25,13 +25,14 @@ export class SkypeHub implements AddinsHub {
      * located on a given endpoint
      * 
      * @param {string} url 
+     * @param {string} token
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
-    public connect(url: string): Promise<void> {
+    public connect(url: string, token: string): Promise<void> {
         this.syncSdk.connectionHandler(ConnectionState.Connecting);
         this.hub = new signalr.HubConnectionBuilder()
-            .withUrl(url)
+            .withUrl(url, { accessTokenFactory: () => token })
             .configureLogging(signalr.LogLevel.Error)
             .build();
 
@@ -42,7 +43,7 @@ export class SkypeHub implements AddinsHub {
 
         this.hub.on('forceReconnect', (hubHost: string) => {
             console.log('[[SkypeSync][AddinsHub]:forceReconnect]', hubHost);
-            this.connect(hubHost);
+            this.connect(hubHost, token);
         });
 
         console.log('[SkypeSync][AddinsHub]::connect - hub:', url);
