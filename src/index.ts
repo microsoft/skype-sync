@@ -20,7 +20,7 @@ export const addinEvents = {
     unlock: 'skype-sync-unlock'
 };
 
-class Sync implements SkypeSync {
+export class Sync implements SkypeSync {
 
     public initHandler: (context: InitContext) => void;
 
@@ -32,6 +32,7 @@ class Sync implements SkypeSync {
     private origin: string;
     private host: string;
     private addinsHub: AddinsHub;
+
     private addinToken: string;
 
     constructor() {
@@ -51,7 +52,7 @@ class Sync implements SkypeSync {
             return;
         }
 
-        const addinUrl = `${this.addinsHub}/hubs/addins`;
+        const addinUrl = `${this.host}/hubs/addins`;
         return this.addinsHub.connect(addinUrl, this.addinToken)
             .then(() => {
                 this.connectionHandler(ConnectionState.Connected);
