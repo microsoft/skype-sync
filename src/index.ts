@@ -116,7 +116,11 @@ export class Sync implements SkypeSync {
     }
 
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
-        if (!messageEvent || messageEvent.source === window || !messageEvent.data || !messageEvent.origin) {
+        if (!messageEvent
+            || messageEvent.source === window
+            || !messageEvent.data
+            || !(typeof messageEvent.data === 'string')
+            || !messageEvent.origin) {
             return;
         }
 
