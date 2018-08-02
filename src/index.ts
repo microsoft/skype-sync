@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+// tslint:disable-next-line no-submodule-imports
+import debounce = require('lodash/debounce');
 
 import { SkypeHub } from './synchronization/skypeHub';
 
 import { AddinMessage, InitAddinMessage } from './hostMessage';
 import { AddinsHub, SkypeSync } from './interfaces';
 import { AddinReadyMessage, ConnectionState, CoreInitContext, InitContext, Message } from './models';
+import batchService from './services/batchService';
 import { NullHub } from './synchronization/nullHub';
 
 export * from './hostMessage';
@@ -82,10 +85,7 @@ export class Sync implements SkypeSync {
             message.payload = JSON.stringify(payload);
         }
 
-        this.addinsHub.sendMessage(message)
-            .catch(e => {
-                this.errorHandler('[SkypeSync]:persistContent  FAIL', e, message);
-            });
+        batchService.queueMessage(message);
     }
 
     /**
@@ -96,10 +96,12 @@ export class Sync implements SkypeSync {
      * @memberof Sync
      */
     public persistContent(content: any) {
-        this.addinsHub.storeContext(JSON.stringify(content))
+        debounce(() => {
+            this.addinsHub.storeContext(JSON.stringify(content))
             .catch(e => {
                 this.errorHandler('[SkypeSync]:persistContent FAIL', e, content);
             });
+        }, 1000);
     }
 
     /**
@@ -157,6 +159,8 @@ export class Sync implements SkypeSync {
             this.addinsHub = new NullHub();
             this.connectionHandler(ConnectionState.Connected);
         }
+
+        batchService.init(this.addinsHub, this.errorHandler);
 
         const context: InitContext = {
             addinSessionId: data.addinSessionId,

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import { AddinsHub } from '../interfaces';
-import { Message } from './../models';
+import { BatchMessage } from './../models';
 
 export class NullHub implements AddinsHub {
 
@@ -11,7 +11,7 @@ export class NullHub implements AddinsHub {
         return Promise.resolve();
     }
 
-    public sendMessage(message: Message): Promise<void> {
+    public sendMessage(message: BatchMessage): Promise<void> {
         console.log('[SkypeSync][NullHub]:sendMessage', message);
         return Promise.resolve();
     }

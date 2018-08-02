@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { ConnectionState, CoreInitContext, InitContext, Message } from './models';
+import { BatchMessage, ConnectionState, CoreInitContext, InitContext, Message } from './models';
 
 /**
  * Contracts the public behaviors Skype Sync SDK provides to the hosts using it 
@@ -71,11 +71,11 @@ export interface AddinsHub {
     /**
      * Sends a message to the hub to the other users participating in the same addin session.
      * 
-     * @param {Message} message 
+     * @param {BatchMessage} message 
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
-    sendMessage(message: Message): Promise<void>;
+    sendMessage(message: BatchMessage): Promise<void>;
     
     /**
      * Initialize the connection with the socket server endpoint 

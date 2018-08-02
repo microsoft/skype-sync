@@ -35,7 +35,17 @@ export interface ConfigurationValue {
 
 export interface Message {
     type: string;
+    time?: number;
     payload?: string;
+}
+
+export class BatchMessage {
+    public serverTimeStamp?: number;
+    public data: Message[];
+
+    constructor() {
+        this.data = [];
+    }
 }
 
 export interface AddinReadyMessage {
