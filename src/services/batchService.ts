@@ -1,7 +1,7 @@
 import { AddinsHub } from '../interfaces';
 import { BatchMessage, Message } from '../models';
 
-const BATCH_MESSAGE = 1000;
+const BATCH_MESSAGE = 200;
 
 export class BatchService {
     private addinsHub: AddinsHub;
@@ -21,6 +21,11 @@ export class BatchService {
 
     public queueMessage = (message: Message) => {
         const currentTimeStamp = Date.now();
+
+        if (this.batchMessage.data.length === 100) {
+            this.errorHandler('[BatchService]:queueMessage - Message Rate Limit Reach');
+            return;
+        }
         
         if (!this.timestamp) {
             this.timestamp = currentTimeStamp;
