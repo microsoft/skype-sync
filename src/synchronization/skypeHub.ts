@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import signalr = require('@aspnet/signalr');
+import msgPack = require('@aspnet/signalr-protocol-msgpack');
 
 import { AddinsHub, SkypeSync } from '../interfaces';
 import { BatchMessage, ConnectionState } from '../models';
@@ -35,6 +36,7 @@ export class SkypeHub implements AddinsHub {
         this.syncSdk.connectionHandler(ConnectionState.Connecting);
         this.hub = new signalr.HubConnectionBuilder()
             .withUrl(url, { accessTokenFactory: () => token })
+            .withHubProtocol(new msgPack.MessagePackHubProtocol())
             .configureLogging(signalr.LogLevel.Error)
             .build();
 
