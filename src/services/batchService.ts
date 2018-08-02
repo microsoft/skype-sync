@@ -1,7 +1,7 @@
 import { AddinsHub } from '../interfaces';
 import { BatchMessage, Message } from '../models';
 
-const BATCH_MESSAGE = 500;
+const BATCH_MESSAGE = 1000;
 
 export class BatchService {
     private addinsHub: AddinsHub;

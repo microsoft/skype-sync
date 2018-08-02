@@ -101,7 +101,7 @@ export class Sync implements SkypeSync {
             .catch(e => {
                 this.errorHandler('[SkypeSync]:persistContent FAIL', e, content);
             });
-        }, 1000);
+        }, 5000);
     }
 
     /**
