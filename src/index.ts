@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-// tslint:disable-next-line no-submodule-imports
-import debounce = require('lodash/debounce');
-
 import { SkypeHub } from './synchronization/skypeHub';
 
 import { AddinMessage, InitAddinMessage } from './hostMessage';
@@ -96,12 +93,10 @@ export class Sync implements SkypeSync {
      * @memberof Sync
      */
     public persistContent(content: any) {
-        debounce(() => {
-            this.addinsHub.storeContext(JSON.stringify(content))
+        this.addinsHub.storeContext(JSON.stringify(content))
             .catch(e => {
                 this.errorHandler('[SkypeSync]:persistContent FAIL', e, content);
             });
-        }, 5000);
     }
 
     /**
