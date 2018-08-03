@@ -36,7 +36,6 @@ export class SkypeHub implements AddinsHub {
         this.syncSdk.connectionHandler(ConnectionState.Connecting);
         this.hub = new signalr.HubConnectionBuilder()
             .withUrl(url, { accessTokenFactory: () => token })
-            .withHubProtocol(new msgPack.MessagePackHubProtocol())
             .configureLogging(signalr.LogLevel.Error)
             .build();
 
