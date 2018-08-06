@@ -1,6 +1,4 @@
 
-import sortBy = require('lodash.sortby');
-
 import { SkypeSync } from '../interfaces';
 import { BatchMessage, Message } from '../models';
 
@@ -23,7 +21,7 @@ export class ReceivingService {
             });
         });
 
-        sortBy(this.queue, ['time'], ['desc']);
+        this.queue = this.queue.sort(a => -a.time);
 
         if (!hasMessages) {
             this.sendMessage();
