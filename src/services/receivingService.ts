@@ -34,9 +34,14 @@ export class ReceivingService {
 
         if (this.queue.length > 0) {
             const nextMessage = this.queue[this.queue.length - 1];
-            setTimeout(() => {
+            const nextTime = nextMessage.time - message.time;
+            if (nextTime <= 0) {
                 this.sendMessage();
-            }, nextMessage.time - message.time);
+            } else {
+                setTimeout(() => {
+                    this.sendMessage();
+                }, nextTime);
+            }
         }
     }
 }
