@@ -36,6 +36,7 @@ export class ReceivingService {
             const firstMessage = this.queue[0];
             if (firstMessage.time - message.time > 200) {
                 this.sendMessage();
+                return;
             }
 
             const nextMessage = this.queue[this.queue.length - 1];
