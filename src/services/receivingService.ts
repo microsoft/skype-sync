@@ -24,7 +24,7 @@ export class ReceivingService {
         });
 
         sortBy(this.queue, (incomingMessage => {
-            return -incomingMessage.time;
+            return incomingMessage.time;
         }));
 
         if (!hasMessages) {
