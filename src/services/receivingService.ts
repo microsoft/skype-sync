@@ -15,6 +15,7 @@ export class ReceivingService {
 
     public messageReceived = (batchMessage: BatchMessage) => {
         const hasMessages = this.queue.length > 0;
+        console.log('[MM] - messageReceived - has messages: ' + hasMessages);
 
         batchMessage.data.forEach(message => {
             this.queue.push({
@@ -23,9 +24,13 @@ export class ReceivingService {
             });
         });
 
+        console.log('[MM] - messageReceived - not sorted queue - ' + JSON.stringify(this.queue));
+
         sortBy(this.queue, (incomingMessage => {
-            return incomingMessage.time;
+            return -incomingMessage.time;
         }));
+
+        console.log('[MM] - messageReceived - sorted queue - ' + JSON.stringify(this.queue));
 
         if (!hasMessages) {
             this.sendMessage();
@@ -33,11 +38,14 @@ export class ReceivingService {
     }
 
     private sendMessage = () => {
+        console.log('[MM] - sendMessage - queue - ' + JSON.stringify(this.queue));
         const message = this.queue.pop();
+        console.log('[MM] - sendMessage - item - ' + JSON.stringify(message));
         this.syncSdk.messageHandler(message.message);
 
         if (this.queue.length > 0) {
             const nextMessage = this.queue[this.queue.length - 1];
+            console.log('[MM] - sendMessage - next: ' + JSON.stringify(nextMessage) + ' time: ' + (nextMessage.time - message.time));
             setTimeout(() => {
                 this.sendMessage();
             }, nextMessage.time - message.time);
