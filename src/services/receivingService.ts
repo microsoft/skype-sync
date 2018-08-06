@@ -16,7 +16,7 @@ export class ReceivingService {
 
         batchMessage.data.forEach(message => {
             this.queue.push({
-                time: batchMessage.serverTimeStamp + message.time,
+                time: batchMessage.serverTimeStamp - (200 - message.time),
                 message: message
             });
         });
@@ -33,6 +33,11 @@ export class ReceivingService {
         this.syncSdk.messageHandler(message.message);
 
         if (this.queue.length > 0) {
+            const firstMessage = this.queue[0];
+            if (firstMessage.time - message.time > 200) {
+                this.sendMessage();
+            }
+
             const nextMessage = this.queue[this.queue.length - 1];
             const nextTime = nextMessage.time - message.time;
             if (nextTime <= 0) {
