@@ -21,7 +21,7 @@ export class ReceivingService {
             });
         });
 
-        this.queue = this.queue.sort(a => -a.time);
+        this.queue = this.queue.sort((a, b) => b.time - a.time);
 
         if (!hasMessages) {
             this.sendMessage();
