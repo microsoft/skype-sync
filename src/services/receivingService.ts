@@ -1,4 +1,5 @@
 
+import configuration from '../configuration';
 import { SkypeSync } from '../interfaces';
 import { BatchMessage, Message } from '../models';
 
@@ -16,7 +17,7 @@ export class ReceivingService {
 
         batchMessage.data.forEach(message => {
             this.queue.push({
-                time: batchMessage.serverTimeStamp - (200 - message.time),
+                time: batchMessage.serverTimeStamp - (configuration.messageSendRate - message.time),
                 message: message
             });
         });
@@ -34,7 +35,7 @@ export class ReceivingService {
 
         if (this.queue.length > 0) {
             const firstMessage = this.queue[0];
-            if (firstMessage.time - message.time > 200) {
+            if (firstMessage.time - message.time > configuration.messageSendRate) {
                 this.sendMessage();
                 return;
             }

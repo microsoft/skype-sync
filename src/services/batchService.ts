@@ -1,9 +1,6 @@
+import configuration from '../configuration';
 import { AddinsHub } from '../interfaces';
 import { BatchMessage, Message } from '../models';
-
-const BATCH_MESSAGE = 200;
-const MAXIMUM_MESSAGES = 100;
-const MAXIMUM_SIZE = 128 * 1024;
 
 export class BatchService {
     private addinsHub: AddinsHub;
@@ -27,19 +24,19 @@ export class BatchService {
         const currentTimeStamp = Date.now();
 
         this.updateSize(message);
-        if (this.currentSize > MAXIMUM_SIZE) {
+        if (this.currentSize > configuration.maximumSize) {
             this.errorHandler('[BatchService]:queueMessage - Maximum Size of the payload reached');
             return;
         }
 
-        if (this.batchMessage.data.length === MAXIMUM_MESSAGES) {
+        if (this.batchMessage.data.length >= configuration.maximumMessages) {
             this.errorHandler('[BatchService]:queueMessage - Message Rate Limit Reach');
             return;
         }
         
         if (!this.timestamp) {
             this.timestamp = currentTimeStamp;
-            setTimeout(this.sendBatchMessage, BATCH_MESSAGE);
+            setTimeout(this.sendBatchMessage, configuration.messageSendRate);
         }
 
         message.time = currentTimeStamp - this.timestamp;

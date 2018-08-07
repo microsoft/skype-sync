@@ -1,6 +1,6 @@
 {
   "name": "@skype/skype-sync",
-  "version": "0.7.14",
+  "version": "0.7.15",
   "description": "Skype Sync SDK allows users to create synchronized experiences on Skype Interviews",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@aspnet/signalr": "^1.0.2",
-    "@aspnet/signalr-protocol-msgpack": "^1.0.2",
-    "lodash.sortby": "^4.7.0"
+    "@aspnet/signalr-protocol-msgpack": "^1.0.2"
   }
 }
