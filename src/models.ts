@@ -48,9 +48,28 @@ export class BatchMessage {
     }
 }
 
-export interface AddinReadyMessage {
+export interface AddinHostMessage {
     type: string;
+    payload?: string;
 }
+
+export interface TelemetryPayload {
+    name: string;
+    data: TelemetryPayloadValue[];
+}
+
+export interface TelemetryPayloadValue {
+    name: string;
+    value: string;
+}
+
+export const AddinEvents = {
+    addinReady: 'skype-sync-addinReady',
+    init: 'skype-sync-init',
+    auth: 'skype-sync-auth',
+    telemetry: 'skype-sync-telemetry',
+    unlock: 'skype-sync-unlock'
+};
 
 /**
  * Initialization

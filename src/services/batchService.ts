@@ -1,6 +1,10 @@
 import configuration from '../configuration';
 import { AddinsHub } from '../interfaces';
 import { BatchMessage, Message } from '../models';
+import HubMessageSendEvent from './telemetry/hubMessageSendEvent';
+import HubSizeLimitEvent from './telemetry/hubSizeLimitEvent';
+import HubQueueLimitEvent from './telemetry/HubQueueLimitEvent';
+import telemetryService from './telemetryService';
 
 export class BatchService {
     private addinsHub: AddinsHub;
@@ -25,11 +29,18 @@ export class BatchService {
 
         this.updateSize(message);
         if (this.currentSize > configuration.maximumSize) {
+            const sizeLimitEvent = new HubSizeLimitEvent();
+            sizeLimitEvent.data.push({ name: 'size', value: `${this.currentSize}` });
+            sizeLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
+            telemetryService.sendTelemetryData(sizeLimitEvent);
             this.errorHandler('[BatchService]:queueMessage - Maximum Size of the payload reached');
             return;
         }
 
         if (this.batchMessage.data.length >= configuration.maximumMessages) {
+            const queueLimitEvent = new HubQueueLimitEvent();
+            queueLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
+            telemetryService.sendTelemetryData(queueLimitEvent);
             this.errorHandler('[BatchService]:queueMessage - Message Rate Limit Reach');
             return;
         }
@@ -46,6 +57,9 @@ export class BatchService {
     private sendBatchMessage = () => {
         this.addinsHub.sendMessage(this.batchMessage)
             .catch(e => {
+                const failEvent = new HubMessageSendEvent();
+                failEvent.data.push({ name: 'exception', value: JSON.stringify(e) });
+                telemetryService.sendTelemetryData(failEvent);
                 this.errorHandler('[BatchService]:sendBatchMessage - FAIL', e);
             });
         this.timestamp = undefined;
