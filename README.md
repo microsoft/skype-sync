@@ -75,6 +75,12 @@ Sync.sendMessage('ADD_NOTE', {
 });
 ```
 
+### Handling connection
+
+Skype Sync implements linear re-try connection policy. In case it is not able to connect to Skype Signaling Service it automatically retries in 500ms. It will try to connect 5 times. Only when after all attempts the error is reported via `errorHandler`.
+
+Same rules are applied when connection is lost. Skype Sync will retry to reconnect 5 times, every 500ms. In this case Connection State is updated immediately via `connectionHandler`.
+
 ### NOTE
 There are certain limits on how many messages can be sent in time and what can be overall size of the messages:
 - only 50 messages can be sent every 200ms
