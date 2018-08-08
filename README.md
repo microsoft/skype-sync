@@ -1,6 +1,6 @@
 # Skype Sync SDK
 
-Skype Sync allows you create shared experiences across different Skype Interviews instances. You can use Skype Sync to synchronize experience between sessions.
+Skype Sync allows you to create shared experiences across different Skype Interviews instances. You can use Skype Sync to synchronize experience between sessions.
 
 ## Getting started
 
@@ -18,7 +18,7 @@ npm install skype-sync
 import Sync, { InitContext } from 'skype-sync';
 ```
 
-3. Make sure to setup initialization handlers to accomondate for your UI. It will be called when Skype Sync is ready to be used, it will also contain Initialization Context.
+3. Make sure to setup initialization handlers to accomodate for your UI. It will be called when Skype Sync is ready to be used and it will contain Initialization Context.
 
 ```ts
 Sync.initHandler = (context: InitContext) => {
@@ -26,14 +26,20 @@ Sync.initHandler = (context: InitContext) => {
 }
 ```
 
-## InitContext
-InitContext contains data that can be used by your application to target specific interview or user.
+## Addin initialization context
+In order for your addin to perform well in a given interview you may need a few data informing you about what interview you are part of, what user is loading the interview etc. We are providing you this data in a way which both protects privacy of our users and allows your addin to work normally.
+ 
+We will be sending you next contextual values when your addin loads in the interview:
+
+- `sessionId` - this is hashed value of a specific interview which you can use if you have more then one addin loaded to synchornize their activities
+- `sessionAddIn` - this is hashed value of a interview addin session which is used for routing messages only to other users using that addin in a given interview
+- `sessionUserId` - this is hashed value of a user in a given interview addin and you can use it to distinguish which one of the users loaded addin and performing actions in it (eg. Mike Smith is typing...)
 
 ```ts
 // Unique addin session shared by all the users.
 addinSessionId: string;
 
-// Unique has of a user identifier he has in a given addin session.
+// Unique hash of a user identifier he/she has in a given addin session.
 addinSessionUserId: string;
 
 // Interview session under which addins are executing.
@@ -51,7 +57,7 @@ configuration?: ConfigurationValue[];
 
 ## Broadcast actions
 
-When our notepad wants to send out new actions to the other instances, the app needs to explicitly connect to the signaling service. 
+When our notepad wants to send out new actions to the other participants, the app needs to explicitly connect to the signaling service. 
 
 ```ts
 Sync.connect().then(() => {
@@ -60,7 +66,7 @@ Sync.connect().then(() => {
 ```
 
 After that your application can just call `Sync.sendMessage(type: string, payload?: any);` to broadcast its information. 
-- `type` can be any string, identifying the type of your message in the application, so in our case of note pad it can be 'ADD_NOTE'.
+- `type` can be any string, identifying the type of your message in the application, so in our case of notepad it can be 'ADD_NOTE'.
 - `payload` is optional parameter and can be any payload that is sent to the other participants that are sharing same `addinSessionId` (~all participants using same addin in same interview session).
 
 ```js
@@ -72,9 +78,9 @@ Sync.sendMessage('ADD_NOTE', {
 ### NOTE
 There are certain limits on how many messages can be sent in time and what can be overall size of the messages:
 - only 50 messages can be sent every 200ms
-- total amount of data that can be sent every 200ms cannot be higher than 128Kb
+- total amount of data that can be sent every 200ms cannot be more than 128Kb
 
-In case that the limit is reached and next message is sent we are informing application using the `errorHandler` (please see below);
+In case that the limit is exceeded and next message is sent we are informing application using the `errorHandler` (please see below);
 
 ## Receive actions
 
@@ -83,14 +89,25 @@ To handle incoming messages the app needs to register the message handler.
 ```ts
 import Sync, { Message } from 'skype-sync';
 
-Sync.messageHandler = (messageRequest: Message) => {
-  // handle incoming message
+Sync.messageHandler = (message: Message) => {
+  switch(message.type) {
+    case 'ADD_NOTE':
+      // handle adding new note
+      addNote(message.payload);
+      break;
+    case 'DELETE_NOTE':
+      // handle deleting a note
+      deleteNote(message.payload);
+      break;
+    default:
+      return;
+  }
 }
 ```
 
-## Errors handling
+## Error handling
 
-In order to allow applications to react on the errors that can happen during synchronization or when the message limit is reached, the app can subscribe to error handler:
+In order to handle errors that can happen during synchronization or when the message limit is reached, the app can set an error handler:
 
 ```ts
 Sync.errorHandler = (e: any) => {
@@ -98,7 +115,7 @@ Sync.errorHandler = (e: any) => {
 }
 ```
 
-Application can also be subscribed to the changes of the Signaling service connection state. Please note that Skype Sync can send messages only when the connection state is `Connected`.
+Application can also be subscribed to changes of the Signaling service connection state. Please note that Skype Sync can send messages only when the connection state is `Connected`.
 
 ```ts
 Sync.connectionHandler = (newState: ConnectionState) => {
