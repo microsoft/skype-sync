@@ -7,24 +7,21 @@ Skype Sync allows you create shared experiences across different Skype Interview
 Let's assume we are building a simplified synchronized note pad app.
 
 1. Install skype-sync npm package.
+
 ```
 npm install skype-sync
 ```
 
 2. Import the Sync SDK
+
 ```ts
 import Sync, { InitContext } from 'skype-sync';
 ```
 
-3. Make sure to setup initialization handlers to accomondate for your UI.
-```ts
-Sync.initHandler = this.syncSdkReady.bind(this);
-```
-
-4. Implement the initialization handler. It will be called when Skype Sync is ready to be used, it will also contain Initialization Context.
+3. Make sure to setup initialization handlers to accomondate for your UI. It will be called when Skype Sync is ready to be used, it will also contain Initialization Context.
 
 ```ts
-private syncSdkReady(context: InitContext) {
+Sync.initHandler = (context: InitContext) => {
   // implement your application start-up logic        
 }
 ```
@@ -73,11 +70,11 @@ Sync.sendMessage('ADD_NOTE', {
 ```
 
 ### NOTE
-There are certain limits on how many messages can be sent in time and what can be overal size of the messages:
+There are certain limits on how many messages can be sent in time and what can be overall size of the messages:
 - only 50 messages can be sent every 200ms
 - total amount of data that can be sent every 200ms cannot be higher than 128Kb
 
-In case that the limit is reached and next message is sent we are informing aplication using the `errorHandler` (please see below);
+In case that the limit is reached and next message is sent we are informing application using the `errorHandler` (please see below);
 
 ## Receive actions
 
