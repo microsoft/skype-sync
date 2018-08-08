@@ -17,9 +17,15 @@ export enum PredefinedAnswerType {
     Option = 3
 }
 
+export enum ConnectionState {
+    Undefined = 0,
+    Connecting = 1,
+    Connected = 2,
+    Disconnected = 3
+}
+
 export interface InitMessageData {
-    configuration: Array<ConfigurationItem>;
-    settings: Array<ConfigurationItem>;
+    configuration: ConfigurationItem[];
 }
 
 export interface ConfigurationValue {
@@ -29,11 +35,77 @@ export interface ConfigurationValue {
 
 export interface Message {
     type: string;
+    time?: number;
     payload?: string;
 }
 
-export interface AddinReadyMessage {
+export class BatchMessage {
+    public serverTimeStamp?: number;
+    public data: Message[];
+
+    constructor() {
+        this.data = [];
+    }
+}
+
+export interface AddinHostMessage {
     type: string;
+    payload?: string;
+}
+
+export interface TelemetryPayload {
+    name: string;
+    data: TelemetryPayloadValue[];
+}
+
+export interface TelemetryPayloadValue {
+    name: string;
+    value: string;
+}
+
+export const AddinEvents = {
+    addinReady: 'skype-sync-addinReady',
+    init: 'skype-sync-init',
+    auth: 'skype-sync-auth',
+    telemetry: 'skype-sync-telemetry',
+    unlock: 'skype-sync-unlock'
+};
+
+export enum ErrorCodes {
+    /**
+     * Error thrown when the connect function is called before the Skype Sync is initialized.
+     */
+    NotInitialized = 1,
+
+    /**
+     * Error thrown when there is some error thrown during the connection to Skype Signaling Service.
+     */
+    ConnectionFailed = 2,
+
+    /**
+     * Error thrown if persist content fails.
+     */
+    PersistContentStoreFailed = 3,
+
+    /**
+     * Error thrown if fetching the persist content fails.
+     */
+    PersistContentFetchFailed = 4,
+
+    /**
+     * Error thrown when the message size limit is exceeded.
+     */
+    MessagesSizeLimitExceeded = 5,
+
+    /**
+     * Error thrown when the message rate limit is exceeded.
+     */
+    MessageRateLimitExceeded = 6,
+
+    /**
+     * Error thrown when there is any issue while sending the message to Skype Signaling Service.
+     */
+    MessageSentFailed = 7
 }
 
 /**
@@ -76,6 +148,14 @@ export interface InitContext extends CoreInitContext {
      * @memberof InitContext
      */
     token: string;
+
+    /**
+     * User's language used in the session.
+     * 
+     * @type {string}
+     * @memberof InitContext
+     */
+    language: string;
 }
 
 /**
@@ -110,12 +190,4 @@ export interface CoreInitContext {
      * @memberof DevInitContext
      */
     configuration?: ConfigurationValue[];
-    
-    /**
-     * An array of addin setting values (optional
-     * 
-     * @type {ConfigurationValue[]}
-     * @memberof DevInitContext
-     */
-    settings?: ConfigurationValue[];
 }

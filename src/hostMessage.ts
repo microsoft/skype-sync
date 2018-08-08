@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { ConfigurationValue } from "./models";
+import { ConfigurationValue } from './models';
 
 /**
  * Set of attributes every message host sends to addins has
@@ -88,19 +88,18 @@ export interface InitAddinMessage extends AddinMessage {
     configuration: ConfigurationValue[];
 
     /**
-     * Set of settings which company/tenant admin sets up  on a company level
-     * and which are used for every interview/meeting
-     * 
-     * @type {ConfigurationValue[]}
-     * @memberof AddinInitHostMessage
-     */
-    setting: ConfigurationValue[];
-
-    /**
      * Valid origin to accept post messages from 
      * 
      * @type {string}
      * @memberof InitAddinMessage
      */
     origin: string;
+
+    /**
+     * Language used in the hosting application.
+     * 
+     * @type {string}
+     * @memberof InitAddinMessage
+     */
+    language: string;
 }

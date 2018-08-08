@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { CoreInitContext, InitContext, Message } from './models';
+import { BatchMessage, ConnectionState, CoreInitContext, ErrorCodes, InitContext, Message } from './models';
 
 /**
  * Contracts the public behaviors Skype Sync SDK provides to the hosts using it 
@@ -13,7 +13,14 @@ import { CoreInitContext, InitContext, Message } from './models';
 export interface SkypeSync {
 
     /**
-     * Handler which will be invoked once the addin is initialized and ready for work
+     * Connects SkypeSync to the Signal Service.
+     * 
+     * @memberof SkypeSync
+     */
+    connect: () => Promise<void>;
+
+    /**
+     * Handler which will be invoked once the addin is initialized and ready for work.
      * 
      * @memberof SkypeSync
      */
@@ -30,9 +37,22 @@ export interface SkypeSync {
      * 
      * Event handler which is handling the errors occurring in the sdk.
      * 
+     * @param {ErrorCodes} errorCode
+     * Identifier of the error type.
+     * @param {any} e
+     * Optional parameter - provides additional information abou the error.
+     * 
      * @memberof SkypeSync
      */
-    errorHandler: (e: any) => void;
+    errorHandler: (errorCode: ErrorCodes, e?: any) => void;
+
+    /**
+     * 
+     * Event handler which is handling the changes of the connection state changes.
+     * 
+     * @memberof SkypeSync
+     */
+    connectionHandler: (connectionState: ConnectionState) => void;
 
     /**
      * Initialize the SDK in the development mode suitable for addin development.
@@ -56,11 +76,11 @@ export interface AddinsHub {
     /**
      * Sends a message to the hub to the other users participating in the same addin session.
      * 
-     * @param {Message} message 
+     * @param {BatchMessage} message 
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
-    sendMessage(message: Message): Promise<void>;
+    sendMessage(message: BatchMessage): Promise<void>;
     
     /**
      * Initialize the connection with the socket server endpoint 
@@ -70,7 +90,7 @@ export interface AddinsHub {
      * @returns {Promise<void>} 
      * @memberof AddinsHub
      */
-    connect(url: string): Promise<void>;
+    connect(url: string, token: string): Promise<void>;
     
      /**
      * Sends a command to the hub to persist given addin session context for later use
