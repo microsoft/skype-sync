@@ -1,77 +1,119 @@
 # Skype Sync SDK
 
-Skype Sync allows you create shared experiences across different Skype Interviews instances.
+Skype Sync allows you create shared experiences across different Skype Interviews instances. You can use Skype Sync to synchronize experience between sessions.
 
 ## Getting started
 
 Let's assume we are building a simplified synchronized note pad app.
 
-1. Import the Sync SDK
-```js
-import Sync from 'skype-sync'
+1. Install skype-sync npm package.
+```
+npm install skype-sync
 ```
 
-2. Make sure to setup initialization handlers to accomondate for your UI.
-```js
-Sync.init((configuration) => {
-  // initialize your application with given configuration
-})
+2. Import the Sync SDK
+```ts
+import Sync, { InitContext } from 'skype-sync';
+```
+
+3. Make sure to setup initialization handlers to accomondate for your UI.
+```ts
+Sync.initHandler = this.syncSdkReady.bind(this);
+```
+
+4. Implement the initialization handler. It will be called when Skype Sync is ready to be used, it will also contain Initialization Context.
+
+```ts
+private syncSdkReady(context: InitContext) {
+  // implement your application start-up logic        
+}
+```
+
+## InitContext
+InitContext contains data that can be used by your application to target specific interview or user.
+
+```ts
+// Unique addin session shared by all the users.
+addinSessionId: string;
+
+// Unique has of a user identifier he has in a given addin session.
+addinSessionUserId: string;
+
+// Interview session under which addins are executing.
+sessionId: string;
+
+// Authorization token which is sent to the addin API.
+token: string;
+
+// User's language used in the session.
+language: string;
+
+// An array of addin configuration values (optional).
+configuration?: ConfigurationValue[];
 ```
 
 ## Broadcast actions
 
-When our notepad wants to send out new actions to the other instances, the app just calls `send(type, payload)` to broadcast its information. 
+When our notepad wants to send out new actions to the other instances, the app needs to explicitly connect to the signaling service. 
+
+```ts
+Sync.connect().then(() => {
+  // you are now connected and you can send messages
+});
+```
+
+After that your application can just call `Sync.sendMessage(type: string, payload?: any);` to broadcast its information. 
+- `type` can be any string, identifying the type of your message in the application, so in our case of note pad it can be 'ADD_NOTE'.
+- `payload` is optional parameter and can be any payload that is sent to the other participants that are sharing same `addinSessionId` (~all participants using same addin in same interview session).
 
 ```js
-Sync.send('ADD_NOTE', {
-  message: textInput.value,
-  author: this.state.author
-})
+Sync.sendMessage('ADD_NOTE', {
+  note: textInput.value
+});
 ```
+
+### NOTE
+There are certain limits on how many messages can be sent in time and what can be overal size of the messages:
+- only 50 messages can be sent every 200ms
+- total amount of data that can be sent every 200ms cannot be higher than 128Kb
+
+In case that the limit is reached and next message is sent we are informing aplication using the `errorHandler` (please see below);
 
 ## Receive actions
 
-To handle incoming messages the app needs to pass an event handler to the `onReceive((type, payload) => any)` function.
+To handle incoming messages the app needs to register the message handler.
 
-When our notepad receives a new action, we can do a switch case on the action type. Then we divert it to the correct function to handle the payload of the action.
+```ts
+import Sync, { Message } from 'skype-sync';
 
-```js
-Sync.onReceive((type, payload) => {
-  switch (type) {
-    case 'ADD_NOTE':
-      // handle adding new note
-      addNote(payload)
-      break
-    case 'DELETE_NOTE':
-      // handle deleting a note
-      deleteNote(payload)
-      break
-    default:
-      return
-  }
-})
+Sync.messageHandler = (messageRequest: Message) => {
+  // handle incoming message
+}
 ```
 
-## Persist content
+## Errors handling
 
-Skype Interviews offers long-term storage for your content to have it persist across multiple sessions. Users who close their browser and come back to the session in a few days will be able to pick up the session from where they left off.
+In order to allow applications to react on the errors that can happen during synchronization or when the message limit is reached, the app can subscribe to error handler:
 
-### Persist your content across sessions
-Put in any javascript object and we're going to persist it for this session.
-```js
-Sync.persistContent(notes)
+```ts
+Sync.errorHandler = (e: any) => {
+  // handle Skype Sync error
+}
 ```
 
-### Load persisted content
-To retrieve the persisted content, set up a handler. Then call the `loadPersistedContent()` method to initiate a request to fetch the stored content.
-```js
-Sync.onPersistedContentLoaded((content) => {
-  app.state.notes = content
-})
-Sync.loadPersistedContent()
+Application can also be subscribed to the changes of the Signaling service connection state. Please note that Skype Sync can send messages only when the connection state is `Connected`.
+
+```ts
+Sync.connectionHandler = (newState: ConnectionState) => {
+  // handle connection state
+}
 ```
 
-
+Connection state can be one of those values:
+- `Undefined` - Unknown state, typically when Skype Sync is not initialized
+- `Connecting` - Application is connecting to the Signaling service
+- `Connected` - Application is connected to the Signaling service
+- `Disconnected` - Application is not connected to the Signaling service
 
 # Contributing
 

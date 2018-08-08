@@ -153,12 +153,4 @@ export interface CoreInitContext {
      * @memberof DevInitContext
      */
     configuration?: ConfigurationValue[];
-    
-    /**
-     * An array of addin setting values (optional
-     * 
-     * @type {ConfigurationValue[]}
-     * @memberof DevInitContext
-     */
-    settings?: ConfigurationValue[];
 }
