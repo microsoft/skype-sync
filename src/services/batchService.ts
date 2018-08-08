@@ -1,6 +1,6 @@
 import configuration from '../configuration';
 import { AddinsHub } from '../interfaces';
-import { BatchMessage, Message } from '../models';
+import { BatchMessage, ErrorCodes, Message } from '../models';
 import HubMessageSendEvent from './telemetry/hubMessageSendEvent';
 import HubSizeLimitEvent from './telemetry/hubSizeLimitEvent';
 import HubQueueLimitEvent from './telemetry/HubQueueLimitEvent';
@@ -8,7 +8,7 @@ import telemetryService from './telemetryService';
 
 export class BatchService {
     private addinsHub: AddinsHub;
-    private errorHandler: (message: string, ...optionalParams: any[]) => void;
+    private errorHandler: (errorCode: ErrorCodes, e?: any) => void;
 
     private timestamp?: number;
     private batchMessage: BatchMessage;
@@ -19,7 +19,7 @@ export class BatchService {
         this.currentSize = 0;
     }
 
-    public init = (addinsHub: AddinsHub, errorHandler: (message: string, ...optionalParams: any[]) => void) => {
+    public init = (addinsHub: AddinsHub, errorHandler: (errorCode: ErrorCodes, e?: any) => void) => {
         this.addinsHub = addinsHub;
         this.errorHandler = errorHandler;
     }
@@ -33,7 +33,7 @@ export class BatchService {
             sizeLimitEvent.data.push({ name: 'size', value: `${this.currentSize}` });
             sizeLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
             telemetryService.sendTelemetryData(sizeLimitEvent);
-            this.errorHandler('[BatchService]:queueMessage - Maximum Size of the payload reached');
+            this.errorHandler(ErrorCodes.MessagesSizeLimitExceeded);
             return;
         }
 
@@ -41,7 +41,7 @@ export class BatchService {
             const queueLimitEvent = new HubQueueLimitEvent();
             queueLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
             telemetryService.sendTelemetryData(queueLimitEvent);
-            this.errorHandler('[BatchService]:queueMessage - Message Rate Limit Reach');
+            this.errorHandler(ErrorCodes.MessageRateLimitExceeded);
             return;
         }
         
@@ -60,7 +60,7 @@ export class BatchService {
                 const failEvent = new HubMessageSendEvent();
                 failEvent.data.push({ name: 'exception', value: JSON.stringify(e) });
                 telemetryService.sendTelemetryData(failEvent);
-                this.errorHandler('[BatchService]:sendBatchMessage - FAIL', e);
+                this.errorHandler(ErrorCodes.MessageSentFailed, e);
             });
         this.timestamp = undefined;
         this.batchMessage = new BatchMessage();

@@ -71,6 +71,43 @@ export const AddinEvents = {
     unlock: 'skype-sync-unlock'
 };
 
+export enum ErrorCodes {
+    /**
+     * Error thrown when the connect function is called before the Skype Sync is initialized.
+     */
+    NotInitialized = 1,
+
+    /**
+     * Error thrown when there is some error thrown during the connection to Skype Signaling Service.
+     */
+    ConnectionFailed = 2,
+
+    /**
+     * Error thrown if persist content fails.
+     */
+    PersistContentStoreFailed = 3,
+
+    /**
+     * Error thrown if fetching the persist content fails.
+     */
+    PersistContentFetchFailed = 4,
+
+    /**
+     * Error thrown when the message size limit is exceeded.
+     */
+    MessagesSizeLimitExceeded = 5,
+
+    /**
+     * Error thrown when the message rate limit is exceeded.
+     */
+    MessageRateLimitExceeded = 6,
+
+    /**
+     * Error thrown when there is any issue while sending the message to Skype Signaling Service.
+     */
+    MessageSentFailed = 7
+}
+
 /**
  * Initialization
  * 

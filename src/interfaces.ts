@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { BatchMessage, ConnectionState, CoreInitContext, InitContext, Message } from './models';
+import { BatchMessage, ConnectionState, CoreInitContext, ErrorCodes, InitContext, Message } from './models';
 
 /**
  * Contracts the public behaviors Skype Sync SDK provides to the hosts using it 
@@ -37,9 +37,14 @@ export interface SkypeSync {
      * 
      * Event handler which is handling the errors occurring in the sdk.
      * 
+     * @param {ErrorCodes} errorCode
+     * Identifier of the error type.
+     * @param {any} e
+     * Optional parameter - provides additional information abou the error.
+     * 
      * @memberof SkypeSync
      */
-    errorHandler: (e: any) => void;
+    errorHandler: (errorCode: ErrorCodes, e?: any) => void;
 
     /**
      * 

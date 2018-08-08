@@ -4,7 +4,7 @@ import { SkypeHub } from './synchronization/skypeHub';
 
 import { AddinMessage, InitAddinMessage } from './hostMessage';
 import { AddinsHub, SkypeSync } from './interfaces';
-import { AddinEvents, AddinHostMessage, ConnectionState, CoreInitContext, InitContext, Message } from './models';
+import { AddinEvents, AddinHostMessage, ConnectionState, CoreInitContext, ErrorCodes, InitContext, Message } from './models';
 import batchService from './services/batchService';
 import HubConnectionEvent from './services/telemetry/hubConnectionEvent';
 import telemetryService from './services/telemetryService';
@@ -19,7 +19,7 @@ export class Sync implements SkypeSync {
     public initHandler: (context: InitContext) => void;
 
     public messageHandler: (message: Message) => void;
-    public errorHandler: (message: string, ...optionalParams: any[]) => void;
+    public errorHandler: (erroCode: ErrorCodes, e?: any) => void;
 
     public connectionHandler: (connectionState: ConnectionState) => void;
 
@@ -44,7 +44,7 @@ export class Sync implements SkypeSync {
      */
     public connect(): Promise<void> {
         if (!this.addinsHub) {
-            this.errorHandler('Skype sync is not initialized. Wait for the init handler to be fired.');
+            this.errorHandler(ErrorCodes.NotInitialized);
             return;
         }
 
@@ -58,7 +58,7 @@ export class Sync implements SkypeSync {
                 const connectionEvent = new HubConnectionEvent();
                 connectionEvent.data.push({ name: 'exception', value: JSON.stringify(e) });
                 telemetryService.sendTelemetryData(connectionEvent);
-                this.errorHandler('[SkypeSync]:connect-failed', e);
+                this.errorHandler(ErrorCodes.ConnectionFailed, e);
             });
     }
 
@@ -97,7 +97,7 @@ export class Sync implements SkypeSync {
     public persistContent(content: any) {
         this.addinsHub.storeContext(JSON.stringify(content))
             .catch(e => {
-                this.errorHandler('[SkypeSync]:persistContent FAIL', e, content);
+                this.errorHandler(ErrorCodes.PersistContentStoreFailed, e);
             });
     }
 
@@ -110,7 +110,7 @@ export class Sync implements SkypeSync {
     public fetchContent(): Promise<string | void> {
         return this.addinsHub.fetchContext()
             .catch(e => {
-                this.errorHandler('[SkypeSync]:fetchContext - error', e);
+                this.errorHandler(ErrorCodes.PersistContentFetchFailed, e);
             });
     }
 
@@ -184,8 +184,8 @@ export class Sync implements SkypeSync {
             console.log('[SkypeSync]:messageHandler', message);
         };
 
-        this.errorHandler = (message: string, ...optionalParams: any[]) => {
-            console.error('[SkypeSync]:errorHandler-' + message, optionalParams);
+        this.errorHandler = (errorCode: ErrorCodes, e?: any) => {
+            console.error('[SkypeSync]:errorHandler-errorCode:' + errorCode, e);
         };
 
         this.connectionHandler = (connectionState: ConnectionState) => {

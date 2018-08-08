@@ -107,13 +107,28 @@ Sync.messageHandler = (message: Message) => {
 
 ## Error handling
 
+### General error handling
+
 In order to handle errors that can happen during synchronization or when the message limit is reached, the app can set an error handler:
 
 ```ts
-Sync.errorHandler = (e: any) => {
+import Sync, { ErrorCodes } from 'skype-sync';
+
+Sync.errorHandler = (errorCode: ErrorCodes, e?: any) => {
   // handle Skype Sync error
 }
 ```
+
+Skype Sync provides the error code for given issue that occured in the Skype Sync.
+- `NotInitialized` - Error thrown when the connect function is called before the Skype Sync is initialized.
+- `ConnectionFailed` - Error thrown when there is some error thrown during the connection to Skype Signaling Service.
+- `PersistContentStoreFailed` - Error thrown if persist content fails.
+- `PersistContentFetchFailed` - Error thrown if fetching the persist content fails.
+- `MessagesSizeLimitExceeded` - Error thrown when the message size limit is exceeded.
+- `MessageRateLimitExceeded` - Error thrown when the message rate limit is exceeded.
+- `MessageSentFailed` - Error thrown when there is any issue while sending the message to Skype Signaling Service.
+
+### Skype Signaling Service connection states
 
 Application can also be subscribed to changes of the Signaling service connection state. Please note that Skype Sync can send messages only when the connection state is `Connected`.
 
