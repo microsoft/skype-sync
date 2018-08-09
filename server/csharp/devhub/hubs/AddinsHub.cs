@@ -1,71 +1,34 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Skype.Interviews.Samples.DevHub.Extensions;
+using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 
 namespace Microsoft.Skype.Interviews.Samples.DevHub.hubs
 {
     public class AddinsHub : Hub<IAddinsHub>
     {
-        private static readonly ConcurrentDictionary<string, TokenInfo> ConnectionInfo 
-            = new ConcurrentDictionary<string, TokenInfo>();
+        const string TEST_ASID = "TEST_ASID";
 
-        private static readonly ConcurrentDictionary<string, string> SessionContext 
-            = new ConcurrentDictionary<string, string>();
-
-        public void SendMessage(AddinMessageRequest message)
+        public async Task SendMessage(AddinMessageRequest message)
         {
-            if (ConnectionInfo.TryGetValue(this.Context.ConnectionId, out var tokenInfo))
-            {
-                this.Clients.OthersInGroup(tokenInfo.asid).messageReceived(message);
-            }
+            message.ServerTimeStamp = DateTime.UtcNow.ConvertToJsFormat();
+            await this.Clients.OthersInGroup(TEST_ASID).MessageReceived(message);
         }
 
         public void StoreContext(string content)
         {
-            if (ConnectionInfo.TryGetValue(this.Context.ConnectionId, out var tokenInfo))
-            {
-                SessionContext.TryAdd(tokenInfo.asid, content);
-            }
+            throw new NotImplementedException();
         }
 
         public string FetchContext()
         {
-            if (ConnectionInfo.TryGetValue(this.Context.ConnectionId, out var tokenInfo))
-            {
-                if (SessionContext.TryGetValue(tokenInfo.asid, out var context))
-                {
-                    return context;
-                }
-            }
-
-            return null;
+            throw new NotImplementedException();
         }
 
         public override async Task OnConnectedAsync()
         {
-            var token = JsonConvert.DeserializeObject<TokenInfo>(this.Context.GetHttpContext().Request.Query["token"]);
-            ConnectionInfo.AddOrUpdate(this.Context.ConnectionId, s => token, (s, info) => token);
-
-            await this.Groups.AddAsync(this.Context.ConnectionId, token.asid);
-
+            await this.Groups.AddToGroupAsync(this.Context.ConnectionId, TEST_ASID);
             await base.OnConnectedAsync();
         }
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            ConnectionInfo.TryRemove(this.Context.ConnectionId, out _);
-            return base.OnDisconnectedAsync(exception);
-       }
     }
-
-    public class TokenInfo
-    {
-        public string adid { get; set; }
-        public string asid { get; set; }
-        public string auid { get; set; }
-        public string sid { get; set; }
-    }
-
 }

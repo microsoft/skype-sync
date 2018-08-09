@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Skype.Interviews.Samples.DevHub.hubs;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.Skype.Interviews.Samples.DevHub
 {
@@ -22,7 +26,9 @@ namespace Microsoft.Skype.Interviews.Samples.DevHub
 
                 });
             });
-            services.AddSignalR();
+
+            services.AddSignalR()
+                .AddMessagePackProtocol();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
