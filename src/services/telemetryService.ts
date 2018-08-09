@@ -19,7 +19,7 @@ export class TelemetryService {
             type: AddinEvents.telemetry,
             payload: JSON.stringify(telemetryPayload)
         };
-        window.parent.postMessage(JSON.stringify(message), this.host);
+        window.parent.postMessage(JSON.stringify(message), this.host || '*');
     }
 }
 

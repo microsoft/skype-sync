@@ -236,8 +236,9 @@ export class Sync implements SkypeSync {
             context = {};
         }
 
-        const sessionUserId = Date.now().toString();
-        const addinId = 'test-addin-' + sessionUserId;
+        const currentTime = Date.now();
+        const sessionUserId = currentTime.toString();
+        const addinId = 'test-addin-' + new Date(currentTime).getMonth() + '-' + new Date(currentTime).getDate();
         const data: InitAddinMessage = {
             addinApiHost: context.apiHost || 'https://everest-dev-hub.azurewebsites.net', // || 'https://localhost:3000',
             addinSessionId: addinSessionId,
