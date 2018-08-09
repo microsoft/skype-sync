@@ -4,19 +4,43 @@ Samples provides overview on the Skype Sync SDK features.
 
 ## Prerequisities
 
-- Visual Studio 2017 (or similar on your Operating System)
 - Latest .NET Core SDK - https://www.microsoft.com/net/download
+- Node.js (https://nodejs.org/en/) - we are using npm for package management
+- One of these:
+  1. Visual Studio 2017
+  2. A code editor (we recommend https://code.visualstudio.com/) and a command line terminal
 
 In order to have samples fully working, you need to start SignalR server that complies with the Skype Sync SDK. We are providing such server in `/server` folder. It provides simplified functionality of real Skype Signaling Service.
+
+### Visual Studio
 
 1. Open `/server/csharp/devhub.sln`
 2. Build the solution - _Build/Build Solution_ (first time might be slower as you will fetch all required nuget packages)
 3. Run the server - _Debug/Start Debugging_
 4. After application is started, browser shall be opened. Copy the url.
 
+### Command Line
+
+1. Open a new terminal window in the project's root folder and go to SignalR server:
+``` 
+cd /server/csharp
+```
+2. Start the simplified SignalR server:
+```
+dotnet run
+```
+3. Copy the url from the terminal (example: `http://localhost:5000`).
+
 ## Basic Sample - Chat
 
-Simple chat application using the synchronization between clients is available in `samples` folder. It is using ASP.NET Core as host application and Javascript with React on the frontend. In order to have this sample fully working you need to have running sample Skype Signaling server - described in _Prerequisities_.
+Simple chat application using the synchronization between clients is available in `samples` folder. 
+
+It is using ASP.NET Core as host application and Javascript with React on the frontend.
+You can also use command line to just run the React application.
+
+In order to have this sample fully working you need to have running sample Skype Signaling server - described in _Prerequisities_.
+
+### Visual Studio
 
 1. Navigate to `samples` folder.
 2. Open `Samples.sln` solution file with Visual Studio.
@@ -26,7 +50,28 @@ Simple chat application using the synchronization between clients is available i
 ```js
 const HUB_URL = 'http://localhost:3036';
 ```
-5. You are now good to go - build solution (_Build/Build Solution_) and run the app (_Debug/Start Debugging_)
+5. You are now good to go - build solution (_Build/Build Solution_) and run the app (_Debug/Start Debugging_).
+
+### Command Line
+
+1. In your code editor open `App.js` file (`samples/Sample.Chat/ClientApp/src/App.js`).
+2. On line 7 change value of `HUB_URL` to the value you got in _Prerequisities step 4_. So the line will look similar to:
+
+```js
+const HUB_URL = 'http://localhost:3036';
+```
+3. Open a new terminal window and from the project's root folder go to the example chat application:
+```
+cd samples/Sample.Chat/ClientApp/
+```
+4. Install all dependendecies for the chat app:
+```
+npm install
+```
+5. Start the application:
+```
+npm start
+```
 
 ### Chat sample description
 
