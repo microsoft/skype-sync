@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 import { SkypeHub } from './synchronization/skypeHub';
 
+import configuration from './configuration';
 import { AddinMessage, InitAddinMessage } from './hostMessage';
 import { AddinsHub, SkypeSync } from './interfaces';
 import { AddinEvents, AddinHostMessage, ConnectionState, CoreInitContext, ErrorCodes, InitContext, Message } from './models';
@@ -23,10 +24,7 @@ export class Sync implements SkypeSync {
 
     public connectionHandler: (connectionState: ConnectionState) => void;
 
-    private host: string;
-
     private origin: string;
-    private addinsApiHost: string;
     private addinsHub: AddinsHub;
 
     private addinToken: string;
@@ -48,7 +46,7 @@ export class Sync implements SkypeSync {
             return;
         }
 
-        const addinUrl = `${this.addinsApiHost}/hubs/addins`;
+        const addinUrl = `${configuration.addinApiHost}/hubs/addins`;
         return this.addinsHub.connect(addinUrl, this.addinToken)
             .then(() => {
                 this.connectionHandler(ConnectionState.Connected);
@@ -152,10 +150,10 @@ export class Sync implements SkypeSync {
 
         telemetryService.init(this.origin, data.manifestIdentifier);
 
-        this.addinsApiHost = data.addinApiHost;
+        configuration.readFromHostData(data.hubconfiguration);
         this.addinToken = data.addinToken;
 
-        if (this.addinsApiHost) {
+        if (configuration.addinApiHost) {
             this.addinsHub = new SkypeHub(this);
         } else {
             this.addinsHub = new NullHub();
@@ -240,7 +238,6 @@ export class Sync implements SkypeSync {
         const sessionUserId = currentTime.toString();
         const addinId = 'test-addin-' + new Date(currentTime).getMonth() + '-' + new Date(currentTime).getDate();
         const data: InitAddinMessage = {
-            addinApiHost: context.apiHost || 'https://everest-dev-hub.azurewebsites.net', // || 'https://localhost:3000',
             addinSessionId: addinSessionId,
             addinSessionUserId: sessionUserId,
             manifestIdentifier: addinId,
@@ -254,7 +251,15 @@ export class Sync implements SkypeSync {
                 auid: sessionUserId,
                 sid: addinSessionId
             }),
-            language: 'en'
+            language: 'en',
+            hubconfiguration: {
+                addinApiHost: context.apiHost || 'https://everest-dev-hub.azurewebsites.net', // || 'https://localhost:3000',
+                maximumConnectionAttempmts: 1,
+                maximumMessages: 10,
+                maximumSize: 128 * 1024,
+                messageSendRate: 200,
+                connectionRetryDelay: 500
+            }
         };
         console.log('[SkypeSync]::___devInit -> starting...', data);
         this.onHostRequestedInit(data);

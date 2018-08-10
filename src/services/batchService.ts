@@ -31,7 +31,7 @@ export class BatchService {
         if (this.currentSize > configuration.maximumSize) {
             const sizeLimitEvent = new HubSizeLimitEvent();
             sizeLimitEvent.data.push({ name: 'size', value: `${this.currentSize}` });
-            sizeLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
+            sizeLimitEvent.data.push({ name: 'since_last_send', value: `${Date.now() - this.timestamp}` });
             telemetryService.sendTelemetryData(sizeLimitEvent);
             this.errorHandler(ErrorCodes.MessagesSizeLimitExceeded);
             return;
@@ -39,7 +39,7 @@ export class BatchService {
 
         if (this.batchMessage.data.length >= configuration.maximumMessages) {
             const queueLimitEvent = new HubQueueLimitEvent();
-            queueLimitEvent.data.push({ name: 'since_last_send', value: `${this.timestamp}` });
+            queueLimitEvent.data.push({ name: 'since_last_send', value: `${Date.now() - this.timestamp}` });
             telemetryService.sendTelemetryData(queueLimitEvent);
             this.errorHandler(ErrorCodes.MessageRateLimitExceeded);
             return;

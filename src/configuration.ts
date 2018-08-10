@@ -1,16 +1,20 @@
+import { HubConfiguration } from './hostMessage';
+
 export class SyncConfiguration {
     public maximumMessages: number;
     public maximumSize: number;
     public messageSendRate: number;
     public maximumConnectionAttempmts: number;
     public connectionRetryDelay: number;
+    public addinApiHost: string;
 
-    constructor() {
-        this.maximumMessages = 50;
-        this.maximumSize = 128 * 1024;
-        this.messageSendRate = 200;
-        this.maximumConnectionAttempmts = 5;
-        this.connectionRetryDelay = 500;
+    public readFromHostData(data: HubConfiguration) {
+        this.maximumConnectionAttempmts = data.maximumConnectionAttempmts;
+        this.maximumMessages = data.maximumMessages;
+        this.maximumSize = data.maximumSize;
+        this.messageSendRate = data.messageSendRate;
+        this.connectionRetryDelay = data.connectionRetryDelay;
+        this.addinApiHost = data.addinApiHost;
     }
 }
 
