@@ -61,14 +61,6 @@ export interface InitAddinMessage extends AddinMessage {
     sessionId: string;
 
     /**
-     * Url of the addins api host
-     * 
-     * @type {string}
-     * @memberof AddinInitHostMessage
-     */
-    addinApiHost: string;
-
-    /**
      * 
      * Token which addin will send as bearer authorization header in 
      * order to authorize itself.
@@ -102,4 +94,62 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof InitAddinMessage
      */
     language: string;
+
+    /**
+     * Configuration for Skype Signaling Service
+     * 
+     * @type {HubConfiguration}
+     * @memberof InitAddinMessage
+     */
+    hubconfiguration: HubConfiguration;
+}
+
+export interface HubConfiguration {
+    /**
+     * Maximum number of messages that can be sent in one batched message.
+     * 
+     * @type {number}
+     * @memberof HubConfiguration
+     */
+    maximumMessages: number;
+
+    /**
+     * Maximum size in bytes of the batached message.
+     * 
+     * @type {number}
+     * @memberof HubConfiguration
+     */
+    maximumSize: number;
+
+    /**
+     * How often the messages are sent to Skype Signaling Service.
+     * 
+     * @type {number}
+     * @memberof HubConfiguration
+     */
+    messageSendRate: number;
+
+    /**
+     * Maximum number of conection re-tries.
+     * 
+     * @type {number}
+     * @memberof HubConfiguration
+     */
+    maximumConnectionAttempmts: number;
+
+    /**
+     * Delay between connection re-tries.
+     * 
+     * @type {number}
+     * @memberof HubConfiguration
+     */
+    connectionRetryDelay: number;
+
+    /**
+     * Url of the addins api host
+     * 
+     * @type {string}
+     * @memberof AddinInitHostMessage
+     */
+    addinApiHost: string;
 }
