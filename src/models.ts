@@ -156,6 +156,22 @@ export interface InitContext extends CoreInitContext {
      * @memberof InitContext
      */
     language: string;
+
+    /**
+     * Correlation id - can be used for tracking issues.
+     * 
+     * @type {string}
+     * @memberof InitContext
+     */
+    correlationId: string;
+
+    /**
+     * Can be used in telemetry events to track user's issues.
+     * 
+     * @type {string}
+     * @memberof InitContext
+     */
+    telemetrySessionId: string;
 }
 
 /**

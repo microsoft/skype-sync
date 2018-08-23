@@ -102,6 +102,22 @@ export interface InitAddinMessage extends AddinMessage {
      * @memberof InitAddinMessage
      */
     hubconfiguration: HubConfiguration;
+
+    /**
+     * Correlation id - can be used for tracking issues.
+     * 
+     * @type {string}
+     * @memberof InitAddinMessage
+     */
+    correlationId: string;
+
+    /**
+     * Can be used in telemetry events to track user's issues.
+     * 
+     * @type {string}
+     * @memberof InitAddinMessage
+     */
+    telemetrySessionId: string;
 }
 
 export interface HubConfiguration {

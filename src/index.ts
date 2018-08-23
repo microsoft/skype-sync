@@ -148,7 +148,7 @@ export class Sync implements SkypeSync {
     private onHostRequestedInit(data: InitAddinMessage) {
         console.log('[SkypeSync]::onHostRequestedInit', data);
 
-        telemetryService.init(this.origin, data.manifestIdentifier);
+        telemetryService.init(this.origin, data.manifestIdentifier, data.correlationId, data.telemetrySessionId);
 
         configuration.readFromHostData(data.hubconfiguration);
         this.addinToken = data.addinToken;
@@ -168,7 +168,9 @@ export class Sync implements SkypeSync {
             configuration: data.configuration,
             sessionId: data.sessionId,
             token: data.addinToken,
-            language: data.language
+            language: data.language,
+            correlationId: data.correlationId,
+            telemetrySessionId: data.telemetrySessionId
         };
         this.initHandler(context);
     }
@@ -238,6 +240,8 @@ export class Sync implements SkypeSync {
         const sessionUserId = currentTime.toString();
         const addinId = 'test-addin-' + new Date(currentTime).getMonth() + '-' + new Date(currentTime).getDate();
         const data: InitAddinMessage = {
+            correlationId: 'test-correlation-id_' + currentTime,
+            telemetrySessionId: 'test-session-id_' + currentTime,
             addinSessionId: addinSessionId,
             addinSessionUserId: sessionUserId,
             manifestIdentifier: addinId,
