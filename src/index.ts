@@ -112,6 +112,22 @@ export class Sync implements SkypeSync {
             });
     }
 
+    /**
+     * Forces sending init request - indicating that the addin is fully loaded.
+     * 
+     * @memberof Sync
+     */
+    public indicateReadyStateIfNeeded = () => {
+        if (!window.parent) {
+            return;
+        }
+
+        const message: AddinHostMessage = {
+            type: AddinEvents.addinReady
+        };
+        window.parent.postMessage(JSON.stringify(message), this.origin ? this.origin : '*');
+    }
+
     private onHostMessageReceived = (messageEvent: MessageEvent) => {
         if (!messageEvent
             || messageEvent.source === window
@@ -191,17 +207,6 @@ export class Sync implements SkypeSync {
         this.connectionHandler = (connectionState: ConnectionState) => {
             console.log('[SkypeSync]:connectionHandler', connectionState);
         };
-    }
-
-    private indicateReadyStateIfNeeded = () => {
-        if (!window.parent) {
-            return;
-        }
-
-        const message: AddinHostMessage = {
-            type: AddinEvents.addinReady
-        };
-        window.parent.postMessage(JSON.stringify(message), this.origin ? this.origin : '*');
     }
 
     private sendUnlockMessageToHost() {
